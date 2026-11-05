@@ -65,3 +65,27 @@ Example points:
 \end{itemize}
 
 \paragraph{Reminder.} The “big picture” statements — confirmation of tasks, validation of the hypothesis, and achievement of the aim — belong in the \textbf{Conclusions chapter}, not here.
+\section{Monolithic Baseline Benchmark}
+The baseline performance evaluation of the monolithic architecture (\texttt{eShopOnWeb}) was conducted using k6 over a 2-minute load test profile with a peak of 10 concurrent Virtual Users (VUs).
+
+\begin{table}[h!]
+\centering
+\caption{Monolithic Architecture Load Test Baseline Metrics}
+\label{tab:monolith_baseline}
+\begin{tabular}{|l|r|}
+\hline
+\textbf{Metric} & \textbf{Observed Value} \\ \hline
+Test Duration & 2 minutes \\ \hline
+Peak Virtual Users (VUs) & 10 \\ \hline
+Total Completed Requests & 903 \\ \hline
+Throughput & 7.52 req/sec \\ \hline
+95th Percentile Latency ($p_{95}$) & 1.02 seconds \\ \hline
+HTTP Error Rate & 0.00\% \\ \hline
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Key Takeaways:}
+\begin{itemize}
+    \item The monolithic stack sustained a throughput of 7.52 requests per second without dropping any HTTP connections or triggering status code errors.
+    \item 95\% of all incoming HTTP requests were serviced in under 1.02 seconds under the 10-VU target load.
+\end{itemize}
