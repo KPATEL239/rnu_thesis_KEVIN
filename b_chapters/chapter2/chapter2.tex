@@ -54,17 +54,17 @@ To eliminate programming-language and framework bias, this investigation evaluat
 
 \begin{figure}[h]
   \centering
+  \resizebox{0.98\linewidth}{!}{%
   \begin{tikzpicture}[
-    node distance=0.7cm and 0.9cm,
     svc/.style={rectangle, draw=black!80, thick, rounded corners=2pt, minimum width=2.4cm, minimum height=0.65cm, align=center, font=\scriptsize},
-    db/.style={cylinder, shape border rotate=90, draw=black!80, thick, aspect=0.25, minimum width=1.8cm, minimum height=0.65cm, align=center, font=\scriptsize},
-    box/.style={rectangle, draw=black!60, dashed, rounded corners=4pt, inner sep=8pt}
+    db/.style={cylinder, shape border rotate=90, draw=black!80, thick, aspect=0.25, minimum width=1.25cm, minimum height=0.6cm, align=center, font=\scriptsize},
+    box/.style={rectangle, draw=black!60, dashed, rounded corners=4pt, inner sep=7pt}
   ]
     % Monolith Side
-    \node[svc, fill=blue!8, minimum width=4.6cm] (m_web) {ASP.NET Core Web / API Host};
-    \node[svc, below=0.45cm of m_web, minimum width=4.6cm] (m_app) {ApplicationCore (Catalog, Basket, Order)};
-    \node[svc, below=0.45cm of m_app, minimum width=4.6cm] (m_inf) {Infrastructure (EF Core Repositories)};
-    \node[db, below=0.55cm of m_inf] (m_db) {SQL Server DB};
+    \node[svc, fill=blue!8, minimum width=4.4cm] (m_web) {ASP.NET Core Web / API Host};
+    \node[svc, below=0.45cm of m_web, minimum width=4.4cm] (m_app) {ApplicationCore (Catalog, Basket, Order)};
+    \node[svc, below=0.45cm of m_app, minimum width=4.4cm] (m_inf) {Infrastructure (EF Core Repositories)};
+    \node[db, below=0.75cm of m_inf, minimum width=1.8cm] (m_db) {SQL Server DB};
     \node[box, fit=(m_web)(m_app)(m_inf), label=above:{\small\textbf{(a) Modular Monolith (eShopOnWeb)}}] (m_box) {};
 
     \draw[->, thick] (m_web) -- (m_app);
@@ -72,14 +72,14 @@ To eliminate programming-language and framework bias, this investigation evaluat
     \draw[->, thick] (m_inf) -- (m_db);
 
     % Microservices Side
-    \node[svc, fill=orange!10, right=2.4cm of m_web, minimum width=4.8cm] (s_gw) {Envoy / YARP API Gateway};
-    \node[svc, below left=0.55cm and -0.4cm of s_gw, minimum width=1.45cm] (s_cat) {Catalog API};
-    \node[svc, right=0.2cm of s_cat, minimum width=1.45cm] (s_bas) {Basket API};
-    \node[svc, right=0.2cm of s_bas, minimum width=1.45cm] (s_ord) {Ordering API};
-    \node[svc, below=0.5cm of s_bas, minimum width=4.8cm, fill=gray!10] (s_bus) {RabbitMQ Event Bus};
-    \node[db, below=0.5cm of s_cat, minimum width=1.3cm] (d_cat) {SQL};
-    \node[db, below=0.5cm of s_bas, minimum width=1.3cm] (d_bas) {Redis};
-    \node[db, below=0.5cm of s_ord, minimum width=1.3cm] (d_ord) {SQL};
+    \node[svc, fill=orange!10, right=1.3cm of m_web, minimum width=4.7cm] (s_gw) {Envoy / YARP API Gateway};
+    \node[svc, below left=0.55cm and -1.45cm of s_gw, minimum width=1.45cm] (s_cat) {Catalog API};
+    \node[svc, right=0.18cm of s_cat, minimum width=1.45cm] (s_bas) {Basket API};
+    \node[svc, right=0.18cm of s_bas, minimum width=1.45cm] (s_ord) {Ordering API};
+    \node[svc, below=0.55cm of s_bas, minimum width=4.7cm, fill=gray!10] (s_bus) {RabbitMQ Event Bus};
+    \node[db, below=0.65cm of s_bus, xshift=-1.6cm] (d_cat) {SQL};
+    \node[db, below=0.65cm of s_bus] (d_bas) {Redis};
+    \node[db, below=0.65cm of s_bus, xshift=1.6cm] (d_ord) {SQL};
     \node[box, fit=(s_gw)(s_cat)(s_ord)(s_bus), label=above:{\small\textbf{(b) Microservices (eShopOnContainers)}}] (s_box) {};
 
     \draw[->, thick] (s_gw) -- (s_cat);
@@ -88,10 +88,11 @@ To eliminate programming-language and framework bias, this investigation evaluat
     \draw[<->, thick] (s_cat) -- (s_bus);
     \draw[<->, thick] (s_bas) -- (s_bus);
     \draw[<->, thick] (s_ord) -- (s_bus);
-    \draw[->, thick] (s_bus) -- (d_cat);
-    \draw[->, thick] (s_bus) -- (d_bas);
-    \draw[->, thick] (s_bus) -- (d_ord);
-  \end{tikzpicture}
+    \draw[->, thick] (s_bus.south -| d_cat) -- (d_cat);
+    \draw[->, thick] (s_bus.south) -- (d_bas);
+    \draw[->, thick] (s_bus.south -| d_ord) -- (d_ord);
+  \end{tikzpicture}%
+  }
   \caption{Structural comparison of the evaluated .NET reference systems: (a) in-process layered modular monolith vs.\ (b) distributed microservices with API gateway and event bus.}
   \label{fig:arch-comparison}
 \end{figure}

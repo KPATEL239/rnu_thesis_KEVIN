@@ -66,10 +66,11 @@ where:
 
 \begin{figure}[h]
   \centering
+  \resizebox{0.96\linewidth}{!}{%
   \begin{tikzpicture}[
-    node distance=1.25cm and 1.4cm,
-    box/.style={rectangle, draw=black!80, thick, rounded corners=3pt, minimum width=3.6cm, minimum height=1.0cm, align=center, font=\small},
-    hub/.style={rectangle, draw=black!90, very thick, fill=black!5, rounded corners=4pt, minimum width=4.0cm, minimum height=1.15cm, align=center, font=\small\bfseries}
+    node distance=1.0cm and 0.9cm,
+    box/.style={rectangle, draw=black!80, thick, rounded corners=3pt, minimum width=3.4cm, minimum height=0.95cm, align=center, font=\small},
+    hub/.style={rectangle, draw=black!90, very thick, fill=black!5, rounded corners=4pt, minimum width=3.8cm, minimum height=1.1cm, align=center, font=\small\bfseries}
   ]
     \node[hub] (iso) {ISO/IEC 25010:2023\\Architectural Quality Model};
     \node[box, above left=of iso] (res) {\textbf{Resource Efficiency ($E_{\text{res}}$)}\\Idle RAM, Peak RAM, Boot Time};
@@ -81,7 +82,8 @@ where:
     \draw[->, thick] (perf) -- (iso);
     \draw[->, thick] (maint) -- (iso);
     \draw[->, thick] (ops) -- (iso);
-  \end{tikzpicture}
+  \end{tikzpicture}%
+  }
   \caption{Theoretical evaluation framework mapping ISO/IEC 25010:2023 quality attributes to empirical metrics.}
   \label{fig:theory-framework}
 \end{figure}
