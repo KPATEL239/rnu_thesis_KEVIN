@@ -1,55 +1,81 @@
 \chapter{Literature Review and Theoretical Background}
 \label{chap:litreview}
 
-\section{Core Concepts and Definitions}
+\section{Core Concepts and Architectural Definitions}
 \label{sec:concepts}
 
-Software architecture defines the fundamental structural organization of a system, comprising its computational components, their externally visible properties, and the relationships governing their interaction and evolution \cite{martin2017,ford2022}. Within modern web engineering, two structural styles dominate backend design: the \textit{modular monolith} and \textit{microservices}.
+Software architecture defines the fundamental structural organization of a software system, encompassing its computational components, their externally visible interfaces, and the dependency rules governing their interaction and evolution \cite{martin2017,ford2022}. Within contemporary web and e-commerce backend engineering, two primary structural paradigms compete for adoption: the \textit{modular monolith} and \textit{microservices}.
 
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Monolithic Architecture:} A software system packaged, deployed, and executed as a single unified process or tightly coupled deployment artifact \cite{richardson2018}. When structured using strict internal namespace boundaries, dependency inversion, and domain-aligned modules, it is termed a \textit{modular monolith}, achieving compile-time modularity without network serialization boundaries \cite{martin2017,newman2021}.
-  \item \textbf{Microservices Architecture:} An architectural style that structures an application as a suite of small, autonomous services modeled around business capabilities, each running in its own process, owning its private data store, and communicating via lightweight mechanisms such as HTTP/REST, gRPC, or asynchronous message brokers \cite{fowler2014,dragoni2017}.
-  \item \textbf{Bounded Context:} A central pattern in Domain-Driven Design (DDD) that demarcates an explicit linguistic and logical boundary within which a particular domain model is defined and applicable \cite{evans2003}. Both modular monoliths and microservices rely on bounded contexts to prevent domain model entanglement.
-  \item \textbf{Change Propagation (Ripple Effect):} The extent to which modifying a requirement in one module necessitates structural edits, recompilation, or redeployment across dependent modules or services \cite{parnas1972,ford2022}.
+  \item \textbf{Monolithic Architecture:} A software system designed, compiled, packaged, and deployed as a single unified executable artifact or tightly coupled process \cite{richardson2018}. In classical ``big ball of mud'' monoliths, presentation, business logic, and data access layers share mutable state without enforced module boundaries.
+  \item \textbf{Modular Monolithic Architecture:} A disciplined evolution of the monolithic style in which internal business domains are partitioned into strictly encapsulated modules using dependency inversion, explicit public interfaces, and isolated persistence schemas, while retaining single-process deployment and in-memory method invocation \cite{martin2017,newman2021}.
+  \item \textbf{Microservices Architecture:} An architectural style that structures an application as a suite of small, autonomous services modeled around business capabilities, each executing in an independent operating-system process, owning its private database, and communicating over network protocols such as HTTP/REST, gRPC, or asynchronous message brokers \cite{fowler2014,dragoni2017}.
+  \item \textbf{Bounded Context:} A foundational strategic pattern in Domain-Driven Design (DDD) that establishes an explicit semantic and structural boundary within which a domain model remains consistent and self-contained \cite{evans2003}. Both modular monoliths and microservices depend on accurate bounded-context identification to prevent cascading coupling.
+  \item \textbf{Change Propagation (Ripple Effect):} The degree to which implementing or modifying a business requirement in one module necessitates structural edits, interface updates, recompilation, or redeployment across dependent modules or services \cite{parnas1972,ford2022}.
 \end{itemize}
 
-\section{Related Work: Themes, Methods, and Evidence}
+\section{Related Work: Themes, Methods, and Empirical Evidence}
 \label{sec:related}
 
-Empirical and secondary literature comparing monolithic and microservices architectures spans three primary research strands:
+Peer-reviewed and industrial literature comparing monolithic and microservices architectures spans three primary empirical streams: systematic mapping studies, runtime performance benchmarks, and socio-technical evolution analyses. Table~\ref{tab:lit-synthesis} synthesizes eight foundational studies relevant to SME architectural selection.
 
-\begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Systematic Mapping and Industry Migration Studies:} Pahl and Jamshidi \cite{pahl2016} and Soldani et al.\ \cite{soldani2018} synthesized industrial reports on microservices adoption, identifying independent deployability and fault isolation as primary gains, while documenting operational complexity, distributed testing difficulty, and infrastructure cost inflation as recurring pains. Similarly, Taibi et al.\ \cite{taibi2017} and Fritzsch et al.\ \cite{fritzsch2019} surveyed industry migrations, finding that teams frequently underestimate the DevOps maturity required to operate distributed service meshes and sagas.
-  \item \textbf{Quantitative Runtime Performance Benchmarks:} Villamizar et al.\ \cite{villamizar2015} evaluated cloud deployment costs for monolithic versus microservice web applications, demonstrating that microservices can reduce infrastructure cost at extreme scale via granular auto-scaling, but incur higher baseline overhead at low-to-moderate traffic. Al-Debagy and Martinek \cite{aldebis2020}, Tapia et al.\ \cite{tapia2020}, and Blinowski et al.\ \cite{blinov2021} conducted controlled HTTP load tests showing that inter-service serialization and API gateway routing introduce measurable overhead on simple transactions, whereas decomposed read paths can outperform monolithic thread pools under concurrent load.
-  \item \textbf{Socio-Technical and Evolutionary Architecture Theory:} Conway's Law \cite{conway1968} posits that system designs mirror the communication structures of the organizations that build them. Building on Parnas's information-hiding criteria \cite{parnas1972}, Fowler \cite{fowler2015monolith} and Newman \cite{newman2021} advocate a ``Monolith-First'' evolutionary strategy, warning that decomposing a system before domain boundaries stabilize results in a ``distributed monolith'' that combines network latency with tight coupling.
-\end{itemize}
+\begin{table}[h]
+  \caption{Synthesis of prior empirical and secondary studies on monolithic vs.\ microservices architectures}
+  \label{tab:lit-synthesis}
+  \centering
+  \begin{tabular}{p{2.7cm}p{2.8cm}p{3.8cm}p{4.3cm}}
+    \toprule
+    \textbf{Study} & \textbf{Methodology} & \textbf{Evaluated Dimensions} & \textbf{Key Empirical Finding} \\
+    \midrule
+    Villamizar et al.\ (2015) \cite{villamizar2015} & Cloud deployment benchmark (AWS) & Infrastructure cost and HTTP response time & Microservices cut cost at hyperscale but add baseline overhead at low traffic. \\
+    Pahl \& Jamshidi (2016) \cite{pahl2016} & Systematic mapping (21 studies) & Cloud-native deployment and DevOps practices & Container orchestration maturity is a prerequisite for microservices gains. \\
+    Dragoni et al.\ (2017) \cite{dragoni2017} & Architectural survey & Scalability, fault isolation, and modularity & Fine-grained decomposition improves fault containment at the cost of network complexity. \\
+    Taibi et al.\ (2017) \cite{taibi2017} & Practitioner survey ($N=21$ companies) & Migration drivers and anti-patterns & Maintainability and scalability drive migration; distributed debugging is the top pain. \\
+    Soldani et al.\ (2018) \cite{soldani2018} & Systematic grey literature review & Industrial pains and gains across 51 sources & Gains center on independent deployment; pains center on operational and memory overhead. \\
+    Al-Debagy \& Martinek (2018) \cite{aldebis2020} & Controlled HTTP load benchmark & Throughput and latency under concurrent load & Monoliths outperform microservices on simple low-concurrency endpoints due to zero network hops. \\
+    Fritzsch et al.\ (2019) \cite{fritzsch2019} & Semi-structured interviews (14 systems) & Refactoring strategies and organizational fit & Lack of domain boundaries causes migrations to stall into distributed monoliths. \\
+    Blinowski et al.\ (2022) \cite{blinov2021} & Multi-stack container benchmark & CPU, RAM, and request latency scaling & Containerized microservices incur significantly higher idle RAM and CPU context-switching overhead. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-Despite extensive literature on large-scale cloud migrations, existing empirical studies rarely isolate the intersection of \textit{resource-constrained SME hardware} and \textit{standardized functional change propagation} across production-equivalent codebases written in the same language ecosystem.
+\paragraph{Critical Synthesis of the Literature Gap.}
+Three consistent patterns emerge from Table~\ref{tab:lit-synthesis}:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Resource vs.\ Concurrency Tension:} Studies such as Blinowski et al.\ \cite{blinov2021} and Villamizar et al.\ \cite{villamizar2015} confirm that microservices carry a fixed baseline memory and CPU tax for gateways, brokers, and separate runtimes, whereas decoupled read services reduce tail latency under concurrent requests.
+  \item \textbf{Organizational Alignment (Conway's Law):} Conway \cite{conway1968}, Fowler \cite{fowler2015monolith}, and Fritzsch et al.\ \cite{fritzsch2019} demonstrate that architectural boundaries mirror team communication structures; decomposing a codebase across ten services when maintained by a single small team multiplies coordination overhead without organizational benefit.
+  \item \textbf{Missing Joint Runtime + Code-Evolution Evaluation on SME Hardware:} Existing benchmarks evaluate either runtime HTTP metrics on synthetic CRUD endpoints or qualitative migration surveys, rarely measuring both runtime resource consumption and concrete source-file change propagation across production-equivalent .NET e-commerce reference systems under SME resource ceilings.
+\end{enumerate}
 
 \section{Theoretical Framework}
 \label{sec:theory}
 
-To evaluate both architectural styles rigorously, this study adopts a multi-dimensional quality model grounded in ISO/IEC~25010:2023 \cite{iso25010} and architectural trade-off analysis \cite{ford2022}. Specifically, architectural suitability $S(A)$ for an SME context is modeled across three orthogonal dimensions:
+To evaluate both architectural styles systematically, this thesis adopts a multi-dimensional quality model grounded in ISO/IEC~25010:2023 \cite{iso25010} and quantitative architectural trade-off analysis \cite{ford2022,kleppmann2017}. Specifically, architectural utility $U(A)$ for an SME e-commerce deployment is formulated as a weighted composite function across three orthogonal criteria:
 
 \begin{equation}
 \label{eq:tradeoff}
-U(A) = w_1 \cdot E_{\text{res}}(A) + w_2 \cdot P_{\text{lat}}(A) + w_3 \cdot M_{\text{evol}}(A), \quad \sum_{i=1}^{3} w_i = 1
+U(A) = w_1 \cdot E_{\text{res}}(A) + w_2 \cdot P_{\text{lat}}(A) + w_3 \cdot M_{\text{evol}}(A), \quad \sum_{i=1}^{3} w_i = 1, \quad w_i \ge 0
 \end{equation}
 
-where $E_{\text{res}}(A)$ denotes runtime resource efficiency (inverse memory footprint and cold-start overhead), $P_{\text{lat}}(A)$ captures responsiveness under concurrent load (median $p_{50}$, tail $p_{95}$ latency, and error-free throughput), and $M_{\text{evol}}(A)$ represents evolutionary maintainability (localization of code edits and deployment scope during feature changes).
+where:
+\begin{itemize}[leftmargin=1.5em]
+  \item $E_{\text{res}}(A)$ quantifies \textbf{runtime resource efficiency}, inversely proportional to idle memory footprint ($M_{\text{idle}}$), peak saturated memory ($M_{\text{load}}$), and cold-to-ready startup duration ($T_{\text{ready}}$);
+  \item $P_{\text{lat}}(A)$ quantifies \textbf{performance efficiency under load}, capturing median latency ($p_{50}$), tail latency ($p_{95}$), sustained request throughput ($\text{RPS}$), and HTTP reliability ($1 - \text{error rate}$);
+  \item $M_{\text{evol}}(A)$ quantifies \textbf{evolutionary maintainability}, measured by the count of modified source files ($F_{\text{mod}}$) and required independent deployment units ($D_{\text{rep}}$) per functional change scenario.
+\end{itemize}
 
 \begin{figure}[h]
   \centering
   \begin{tikzpicture}[
-    node distance=1.2cm and 1.4cm,
-    box/.style={rectangle, draw=black!80, thick, rounded corners=3pt, minimum width=3.4cm, minimum height=0.95cm, align=center, font=\small},
-    hub/.style={rectangle, draw=black!90, very thick, fill=black!5, rounded corners=4pt, minimum width=3.8cm, minimum height=1.1cm, align=center, font=\small\bfseries}
+    node distance=1.25cm and 1.4cm,
+    box/.style={rectangle, draw=black!80, thick, rounded corners=3pt, minimum width=3.6cm, minimum height=1.0cm, align=center, font=\small},
+    hub/.style={rectangle, draw=black!90, very thick, fill=black!5, rounded corners=4pt, minimum width=4.0cm, minimum height=1.15cm, align=center, font=\small\bfseries}
   ]
-    \node[hub] (iso) {ISO/IEC 25010:2023\\Architectural Quality};
-    \node[box, above left=of iso] (res) {\textbf{Resource Efficiency}\\Idle \& Peak RAM, Boot Time};
-    \node[box, above right=of iso] (perf) {\textbf{Performance Efficiency}\\$p_{50}$ / $p_{95}$ Latency, RPS};
-    \node[box, below left=of iso] (maint) {\textbf{Maintainability}\\Files Touched, Coupling};
-    \node[box, below right=of iso] (ops) {\textbf{Operability (SME)}\\Deploy Units, Infra Cost};
+    \node[hub] (iso) {ISO/IEC 25010:2023\\Architectural Quality Model};
+    \node[box, above left=of iso] (res) {\textbf{Resource Efficiency ($E_{\text{res}}$)}\\Idle RAM, Peak RAM, Boot Time};
+    \node[box, above right=of iso] (perf) {\textbf{Performance Efficiency ($P_{\text{lat}}$)}\\$p_{50}$ / $p_{95}$ Latency, RPS, Errors};
+    \node[box, below left=of iso] (maint) {\textbf{Maintainability ($M_{\text{evol}}$)}\\Files Modified, Change Coupling};
+    \node[box, below right=of iso] (ops) {\textbf{SME Operability}\\Deploy Units, Hosting Cost};
 
     \draw[->, thick] (res) -- (iso);
     \draw[->, thick] (perf) -- (iso);
@@ -64,14 +90,11 @@ where $E_{\text{res}}(A)$ denotes runtime resource efficiency (inverse memory fo
 \label{sec:motivation}
 
 \paragraph{Purpose and Problem Significance.}
-For SME engineering leads and founders, choosing microservices solely due to industry hype can exhaust limited server memory and slow down small developer teams, whereas choosing an unstructured monolith risks technical debt during rapid product iteration. Providing concrete, reproducible measurements on identical .NET reference implementations equips SME decision-makers with empirical evidence rather than anecdotal claims.
-
-\paragraph{Identified Gap and Research Direction.}
-Existing benchmarks seldom measure both runtime resource consumption and source-level change propagation on equivalent enterprise-grade .NET e-commerce platforms under constrained host resources. This thesis addresses that gap by pairing controlled Docker/\texttt{k6} runtime benchmarks with five standardized code-evolution scenarios across \texttt{eShopOnWeb} and \texttt{eShopOnContainers}, corroborated by practitioner interviews.
+For SME engineering leads and technical founders, premature adoption of microservices driven by industry trends can exhaust limited virtual-machine memory and slow down compact engineering teams, whereas an undisciplined monolith risks structural decay as business rules accumulate. Producing empirical, reproducible measurements on equivalent enterprise-grade .NET implementations equips SME decision-makers with concrete quantitative thresholds.
 
 \paragraph{Success Criteria.}
-The research direction is validated if: (1) both reference architectures execute reproducibly under identical traffic profiles with $0.00\%$ HTTP error rates; (2) hypotheses H1--H3 are quantitatively confirmed or refuted with exact telemetry logs; and (3) the resulting decision matrix provides unambiguous threshold rules for SME teams.
+The research direction is validated when: (1) both reference systems execute reproducibly under identical containerized resource ceilings with $0.00\%$ HTTP error rates; (2) Hypotheses H1--H3 are evaluated using exact telemetry logs and source-file diffs; and (3) the resulting decision matrix translates empirical trade-offs into actionable adoption rules for SME teams.
 
 \section{Chapter Summary}
 \label{sec:ch1-summary}
-This chapter established the formal definitions of modular monolithic and microservices architectures, synthesized empirical findings across performance and migration literature, formulated a three-dimensional evaluation lens grounded in ISO/IEC~25010:2023, and defined the empirical gap and success criteria guiding Chapters~2 through~5.
+This chapter defined modular monolithic and microservices architectures, synthesized eight peer-reviewed empirical studies in Table~\ref{tab:lit-synthesis}, formulated a three-dimensional ISO/IEC~25010:2023 utility model, and established the empirical research gap addressed in Chapters~2 through~5.

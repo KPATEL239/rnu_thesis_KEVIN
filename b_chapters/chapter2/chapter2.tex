@@ -1,44 +1,56 @@
 \chapter{SME E-Commerce Domain and Architectural Requirements}
 \label{chap:analysis}
 
-\section{Operational Characteristics of SME E-Commerce Platforms}
+\section{Operational and Financial Characteristics of SME E-Commerce}
 \label{sec:sme-domain}
 
-Small and medium-sized e-commerce enterprises exhibit distinct technical and organizational profiles compared to hyperscale marketplaces \cite{ford2022,newman2021}. Table~\ref{tab:sme-profile} summarizes the structural parameters that govern architectural feasibility in an SME setting.
+Small and medium-sized e-commerce enterprises operate under fundamentally different economic and organizational parameters than large digital platforms \cite{ford2022,newman2021}. While hyperscale retailers optimize for multi-region availability across hundreds of engineers, SMEs optimize for capital efficiency, rapid feature experimentation, and operational simplicity. Table~\ref{tab:sme-profile} summarizes the structural constraints defining an SME e-commerce environment.
 
 \begin{table}[h]
-  \caption{Operational and technical characteristics of SME e-commerce enterprises}
+  \caption{Operational, financial, and technical constraints of SME e-commerce enterprises}
   \label{tab:sme-profile}
   \centering
-  \begin{tabular}{p{3.8cm}p{5.2cm}p{5.2cm}}
+  \begin{tabular}{p{3.6cm}p{5.2cm}p{5.4cm}}
     \toprule
-    \textbf{Dimension} & \textbf{SME Reality} & \textbf{Architectural Implication} \\
+    \textbf{Constraint Dimension} & \textbf{SME Operational Reality} & \textbf{Architectural Consequence} \\
     \midrule
-    Engineering Team Size & 2--8 full-stack or backend developers & High cognitive cost if managing $>5$ repositories and pipelines \\
-    Monthly Cloud Budget & \$50--\$400/month (single VPS or small container cluster) & Baseline RAM and CPU overhead directly impacts hosting cost \\
-    Traffic Profile & Steady daytime browsing with seasonal promotional spikes & Low tail latency ($p_{95}$) matters more than multi-region clustering \\
-    Feature Velocity & Weekly updates to promotions, catalog fields, and payment gateways & Cross-cutting changes must not stall release coordination \\
-    DevOps Maturity & Automated CI/CD with minimal dedicated SRE staff & Distributed tracing and saga orchestration add high operational risk \\
+    Engineering Team Size & 2--8 full-stack or backend developers & High cognitive and context-switching penalty if managing $>5$ repositories and CI/CD pipelines \\
+    Monthly Cloud Budget & \$50--\$350/month (single VPS or small container node, 2--8 GiB RAM) & Baseline idle RAM directly determines minimum VM tier and monthly hosting expenditure \\
+    Workload & 80--85\% read-heavy catalog browsing; 15--20\% stateful cart/checkout writes & Read latency ($p_{95}$) governs conversion rate during promotional campaigns \\
+    Release Cadence & Weekly updates to discount rules, catalog attributes, and payment adapters & Cross-cutting edits requiring multi-service lockstep releases delay time-to-market \\
+    DevOps & Automated build/deploy scripts without 24/7 dedicated SRE engineers & Distributed tracing, message-broker dead-letter queues, and sagas increase outage recovery time \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\section{Functional Domains of a Standard E-Commerce System}
+\section{Core Bounded Contexts of an E-Commerce Platform}
 \label{sec:ecommerce-domains}
 
-Regardless of architectural topology, a modern e-commerce backend decomposes logically into five core bounded contexts \cite{evans2003,richardson2018}:
+Applying Domain-Driven Design strategic decomposition \cite{evans2003,richardson2018}, a standard SME e-commerce platform comprises five core functional bounded contexts:
 \begin{enumerate}[leftmargin=1.5em]
-  \item \textbf{Catalog Management:} Product listings, categories, brands, pricing metadata, and media assets (read-dominated, $>80\%$ of storefront HTTP traffic).
-  \item \textbf{Shopping Basket:} Session- or user-bound cart state, item quantities, and promotional discount calculations.
-  \item \textbf{Ordering and Checkout:} Transactional order creation, stock reservation, shipping address validation, and order status transitions.
-  \item \textbf{Payment Processing:} Integration with external payment service providers (PSPs), authorization callbacks, and refund workflows.
-  \item \textbf{Identity and Access:} Customer registration, authentication tokens, role-based authorization, and profile management.
+  \item \textbf{Catalog Management:} Product definitions, category hierarchies, brand metadata, pricing, and inventory counts. Exhibits a high read-to-write ratio ($>10:1$) and tolerates short-lived caching.
+  \item \textbf{Shopping Basket:} Ephemeral or authenticated customer cart state, line-item quantities, and promotional coupon validation. Requires low-latency read/write operations during active browsing.
+  \item \textbf{Ordering and Checkout:} Transactional order creation, stock reservation, shipping address persistence, and fulfillment state transitions. Demands strong ACID consistency to prevent overselling or duplicate charges \cite{kleppmann2017}.
+  \item \textbf{Payment Processing:} Integration with external payment service providers (PSPs), webhook signature verification, authorization capture, and refund workflows.
+  \item \textbf{Identity and Access Management:} Customer authentication, JWT/cookie session issuance, role-based access control (shopper vs.\ administrator), and profile management.
 \end{enumerate}
+
+\section{Infrastructure Cost Scaling Model for SMEs}
+\label{sec:cost-model}
+
+To connect container memory footprint directly to SME financial constraints, monthly compute cost $C_{\text{infra}}$ on standard cloud virtual private servers (VPS) or managed container instances scales as a step function of baseline resident memory $M_{\text{idle}}$ plus headroom $\Delta M_{\text{peak}}$:
+
+\begin{equation}
+\label{eq:infra-cost}
+C_{\text{infra}}(A) = c_{\text{base}} \cdot \left\lceil \frac{M_{\text{idle}}(A) + \Delta M_{\text{peak}}(A) + M_{\text{OS}}}{M_{\text{tier}}} \right\rceil + C_{\text{managed}}(A)
+\end{equation}
+
+where $M_{\text{tier}}$ represents standard cloud RAM increments (e.g., $2\text{ GiB}$, $4\text{ GiB}$, $8\text{ GiB}$), $M_{\text{OS}}$ denotes host kernel and container daemon overhead ($\approx 512\text{ MiB}$), and $C_{\text{managed}}(A)$ captures auxiliary managed services (message brokers, service registries, distributed log aggregators) required by distributed topologies. A $300\text{ MiB}$--$400\text{ MiB}$ reduction in baseline runtime memory frequently allows an SME to operate reliably within a $2\text{ GiB}$ or $4\text{ GiB}$ instance tier rather than upgrading to an $8\text{ GiB}$ cluster.
 
 \section{Structural Topology of the Evaluated Reference Systems}
 \label{sec:topologies}
 
-To ensure an unbiased, apples-to-apples empirical evaluation, this study selects Microsoft's two official .NET architectural reference applications—\texttt{eShopOnWeb} \cite{msft_eshoponweb} and \texttt{eShopOnContainers} \cite{msft_eshoponcontainers}—which implement the exact same e-commerce domain within the C\# / ASP.NET Core ecosystem. Figure~\ref{fig:arch-comparison} contrasts their structural topologies.
+To eliminate programming-language and framework bias, this investigation evaluates Microsoft's two official .NET architectural reference applications—\texttt{eShopOnWeb} \cite{msft_eshoponweb} and \texttt{eShopOnContainers} \cite{msft_eshoponcontainers}—which implement the exact same e-commerce domain in C\# and ASP.NET Core. Figure~\ref{fig:arch-comparison} illustrates their contrasting structural topologies.
 
 \begin{figure}[h]
   \centering
@@ -84,8 +96,8 @@ To ensure an unbiased, apples-to-apples empirical evaluation, this study selects
   \label{fig:arch-comparison}
 \end{figure}
 
-In \texttt{eShopOnWeb}, Clean Architecture separates \texttt{Web}, \texttt{ApplicationCore}, and \texttt{Infrastructure} into distinct class libraries compiled into a single deployment unit backed by SQL Server. In \texttt{eShopOnContainers}, each bounded context runs as an isolated container image with independent persistence (SQL Server, Redis) coordinated via an API gateway and RabbitMQ event bus.
+In \texttt{eShopOnWeb}, Clean Architecture separates \texttt{Web}, \texttt{ApplicationCore}, and \texttt{Infrastructure} into distinct C\# class libraries compiled into a single deployment unit backed by a unified SQL Server database. In \texttt{eShopOnContainers}, each bounded context runs as an autonomous Linux container with independent persistence (SQL Server for Catalog and Ordering, Redis for Basket) coordinated via an API gateway and RabbitMQ integration event bus.
 
 \section{Chapter Summary}
 \label{sec:ch2-summary}
-This chapter defined the resource, team, and traffic constraints of SME e-commerce platforms, decomposed the system into five core bounded contexts, and mapped the structural topologies of \texttt{eShopOnWeb} and \texttt{eShopOnContainers} as the empirical comparison pair.
+This chapter defined the team, budget, and traffic constraints of SME e-commerce enterprises, decomposed the domain into five bounded contexts, formulated a step-function cloud memory cost model, and mapped the topologies of \texttt{eShopOnWeb} and \texttt{eShopOnContainers}.
