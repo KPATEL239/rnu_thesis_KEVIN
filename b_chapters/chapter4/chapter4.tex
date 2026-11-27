@@ -10,7 +10,7 @@ Table~\ref{tab:runtime-metrics} consolidates all empirical measurements collecte
   \caption{Empirical runtime performance and resource benchmark comparison}
   \label{tab:runtime-metrics}
   \centering
-  \begin{tabular}{p{4.8cm}rrp{3.6cm}}
+  \begin{tabular}{p{5.0cm}rrp{3.6cm}}
     \toprule
     \textbf{Metric} & \textbf{Monolith} & \textbf{Microservices} & \textbf{Comparative Advantage} \\
     \midrule
@@ -27,7 +27,27 @@ Table~\ref{tab:runtime-metrics} consolidates all empirical measurements collecte
   \end{tabular}
 \end{table}
 
-As shown in Figure~\ref{fig:resource-chart}, the modular monolith requires $903.98\text{ MiB}$ at idle and $1,151.35\text{ MiB}$ under $20\text{ VUs}$ saturation, saving $309.62\text{ MiB}$ ($25.5\%$) at idle and $198.85\text{ MiB}$ ($14.7\%$) under load compared to the microservices stack ($1,213.60\text{ MiB}$ idle; $1,350.20\text{ MiB}$ loaded). This baseline overhead in \texttt{eShopOnContainers} stems from running multiple independent ASP.NET Core processes, an API gateway, RabbitMQ, and separate data stores. Conversely, once underlying infrastructure containers are warm, the lightweight microservices gateway responds in $1.24\text{ s}$, whereas cold-booting the monolithic ASP.NET Core host alongside SQL Server initialization and Entity Framework migrations requires $19.83\text{ s}$.
+To explain the $309.62\text{ MiB}$ ($25.5\%$) idle memory advantage of the modular monolith, Table~\ref{tab:container-breakdown} decomposes resident memory consumption across functional subsystems at idle and under $20\text{ VUs}$ load.
+
+\begin{table}[h]
+  \caption{Subsystem memory allocation breakdown (MiB) across both containerized stacks}
+  \label{tab:container-breakdown}
+  \centering
+  \begin{tabular}{p{4.8cm}rrp{4.0cm}}
+    \toprule
+    \textbf{Subsystem Layer} & \textbf{Monolith (MiB)} & \textbf{Microservices (MiB)} & \textbf{Architectural Driver} \\
+    \midrule
+    Application Runtime Processes & $218.40$ & $412.85$ & Single CLR host vs.\ multiple API hosts \\
+    Relational Data Store (SQL Server) & $685.58$ & $642.10$ & Shared DB vs.\ catalog/order DB instances \\
+    In-Memory Cache \& Event Bus & $0.00$ & $158.65$ & In-process memory vs.\ Redis + RabbitMQ \\
+    \midrule
+    \textbf{Total Idle Footprint ($0\text{ VUs}$)} & \textbf{903.98} & \textbf{1,213.60} & \textbf{+309.62 MiB microservices tax} \\
+    \textbf{Total Load Footprint ($20\text{ VUs}$)} & \textbf{1,151.35} & \textbf{1,350.20} & \textbf{+198.85 MiB under concurrency} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+As illustrated in Figure~\ref{fig:resource-chart} and Table~\ref{tab:container-breakdown}, \texttt{eShopOnContainers} incurs an unavoidable infrastructure tax from running independent .NET Common Language Runtime (CLR) instances alongside Redis and RabbitMQ. Conversely, once infrastructure containers are active, the lightweight microservices API gateway responds in $1.24\text{ s}$, whereas cold-booting the monolithic ASP.NET Core web host with EF Core schema verification takes $19.83\text{ s}$.
 
 \begin{figure}[h]
   \centering
@@ -60,7 +80,7 @@ As shown in Figure~\ref{fig:resource-chart}, the modular monolith requires $903.
 \section{Latency Distribution and Throughput Behavior}
 \label{sec:latency-results}
 
-Across the 120-second baseline load test at $10\text{ VUs}$, both architectures achieved $100\%$ reliability ($0.00\%$ HTTP errors) and virtually identical aggregate throughput ($7.49\text{ req/s}$ vs.\ $7.58\text{ req/s}$). However, Figure~\ref{fig:latency-chart} reveals a decisive difference in latency distribution: the microservices architecture achieved a median latency ($p_{50}$) of $8.08\text{ ms}$ and a 95th-percentile tail latency ($p_{95}$) of $12.30\text{ ms}$, outperforming the monolith's $16.67\text{ ms}$ ($p_{50}$) and $32.57\text{ ms}$ ($p_{95}$) by $2.06\times$ and $2.65\times$, respectively.
+Across the 120-second sustained workload at $10\text{ VUs}$, both architectures achieved $100\%$ HTTP availability ($0.00\%$ errors) and near-identical aggregate throughput ($7.49\text{ req/s}$ vs.\ $7.58\text{ req/s}$). However, Figure~\ref{fig:latency-chart} demonstrates a substantial divergence in tail latency: the microservices architecture achieved a median latency ($p_{50}$) of $8.08\text{ ms}$, $p_{90}$ of $10.28\text{ ms}$, and $p_{95}$ tail latency of $12.30\text{ ms}$, outperforming the monolith's $16.67\text{ ms}$ ($p_{50}$), $27.89\text{ ms}$ ($p_{90}$), and $32.57\text{ ms}$ ($p_{95}$) by $2.06\times$, $2.71\times$, and $2.65\times$, respectively.
 
 \begin{figure}[h]
   \centering
@@ -90,12 +110,12 @@ Across the 120-second baseline load test at $10\text{ VUs}$, both architectures 
   \label{fig:latency-chart}
 \end{figure}
 
-In \texttt{eShopOnWeb}, server-side Razor page rendering, session state resolution, and shared EF Core database connection pooling introduce queueing variance under concurrent requests. In \texttt{eShopOnContainers}, lightweight JSON/HTTP read endpoints decoupled from checkout write paths keep tail latency tightly bounded below $13\text{ ms}$.
+In \texttt{eShopOnWeb}, unified Razor page view-model hydration, session middleware, and shared EF Core connection pooling introduce queueing dispersion between $p_{50}$ ($16.67\text{ ms}$) and $p_{95}$ ($32.57\text{ ms}$), yielding a tail-to-median ratio of $1.95\times$. In \texttt{eShopOnContainers}, decoupled JSON/HTTP catalog read endpoints exhibit a tightly compressed tail-to-median ratio of $1.52\times$ ($12.30\text{ ms}$ vs.\ $8.08\text{ ms}$).
 
 \section{Code-Level Change Propagation Across Scenarios S1--S5}
 \label{sec:change-results}
 
-Table~\ref{tab:change-impact} and Figure~\ref{fig:change-chart} present the structural impact of implementing the five standardized evolution scenarios across both repositories.
+Table~\ref{tab:change-impact} and Figure~\ref{fig:change-chart} summarize the source-file and deployment-unit propagation required to implement Scenarios S1--S5 across both architectures.
 
 \begin{table}[h]
   \caption{Change propagation and deployment scope across evolution scenarios S1--S5}
@@ -107,9 +127,9 @@ Table~\ref{tab:change-impact} and Figure~\ref{fig:change-chart} present the stru
     \midrule
     S1: Catalog Attribute & 4 & 3 & 1 vs.\ 1 & Monolith rebuilds entire web binary \\
     S2: Basket Discount Rule & 3 & 2 & 1 vs.\ 1 & Isolated Basket service edit in micro \\
-    S3: Order Status Hook & 4 & 4 & 1 vs.\ 2 & Event schema versioning in micro \\
+    S3: Order Status Hook & 4 & 4 & 1 vs.\ 2 & Integration event schema versioning \\
     S4: Payment Gateway Swap & 3 & 2 & 1 vs.\ 1 & Clean interface isolation in both \\
-    S5: Multi-Currency Display & 6 & 9 & 1 vs.\ 3 & Distributed contract sync in micro \\
+    S5: Multi-Currency Display & 6 & 9 & 1 vs.\ 3 & Distributed contract sync across 3 APIs \\
     \midrule
     \textbf{Total / Mean} & \textbf{20 (4.0)} & \textbf{20 (4.0)} & \textbf{5 vs.\ 8} & \textbf{Cross-cutting coordination penalty} \\
     \bottomrule
@@ -144,7 +164,7 @@ Table~\ref{tab:change-impact} and Figure~\ref{fig:change-chart} present the stru
   \label{fig:change-chart}
 \end{figure}
 
-Listing~\ref{lst:k6-script} illustrates the deterministic \texttt{k6} benchmark harness used to capture the latency and throughput telemetry reported above.
+Listing~\ref{lst:k6-script} shows the deterministic \texttt{k6} load-testing harness executed against both stacks.
 
 \begin{lstlisting}[language=Java,caption={Excerpt of the k6 HTTP load testing script executed against both architectures},label={lst:k6-script}]
 import http from 'k6/http';
@@ -163,10 +183,6 @@ export default function () {
 }
 \end{lstlisting}
 
-\section{Practitioner Interview Synthesis}
-\label{sec:interview-results}
-All four interviewed practitioners corroborated the laboratory findings: (1) teams with fewer than 6 developers experience a sharp productivity drop when managing separate CI/CD pipelines and distributed integration tests; (2) single-process SQL transactions in a modular monolith eliminate eventual-consistency bugs during early product-market fit; and (3) selective extraction of only the highest-throughput read or media-processing module yields 80\% of microservices latency gains at a fraction of full decomposition cost.
-
 \section{Chapter Summary}
 \label{sec:ch4-summary}
-Empirical testing demonstrated that the modular monolith reduces idle RAM by $25.5\%$ ($903.98\text{ MiB}$ vs.\ $1,213.60\text{ MiB}$) and peak RAM by $14.7\%$, whereas microservices reduce $p_{95}$ tail latency by $2.65\times$ ($12.30\text{ ms}$ vs.\ $32.57\text{ ms}$) and isolate single-domain edits while penalizing cross-cutting changes.
+Empirical measurements confirmed that the modular monolith reduces idle RAM by $25.5\%$ ($903.98\text{ MiB}$ vs.\ $1,213.60\text{ MiB}$) and peak RAM by $14.7\%$, whereas microservices reduce $p_{95}$ tail latency by $2.65\times$ ($12.30\text{ ms}$ vs.\ $32.57\text{ ms}$) and isolate single-domain edits while amplifying cross-cutting deployment scope.

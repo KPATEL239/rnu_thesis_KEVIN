@@ -1,20 +1,20 @@
-\chapter{Summary of Practitioner Interview Findings}
+\chapter{Industrial Migration Case-Study Triangulation Matrix}
 \label{app:interviews}
 
-Table~\ref{tab:interview-summary} summarizes the anonymized profiles and key architectural observations of the four senior backend engineers interviewed during the empirical phase.
+Table~\ref{tab:interview-summary} summarizes the empirical evidence extracted from peer-reviewed industrial migration studies used in Section~\ref{sec:industry-triangulation} to triangulate the laboratory benchmark results.
 
 \begin{table}[h]
-  \caption{Anonymized summary of practitioner interview participants and core insights}
+  \caption{Cross-study triangulation of SME architectural constraints and migration outcomes}
   \label{tab:interview-summary}
   \centering
-  \begin{tabular}{p{1.6cm}p{3.4cm}p{2.2cm}p{6.6cm}}
+  \begin{tabular}{p{3.0cm}p{2.6cm}p{3.4cm}p{4.8cm}}
     \toprule
-    \textbf{ID} & \textbf{Role} & \textbf{Experience} & \textbf{Key Architectural Observation} \\
+    \textbf{Source Study} & \textbf{Sample Scope} & \textbf{Observed Bottleneck} & \textbf{Alignment with Thesis Findings} \\
     \midrule
-    P1 & Principal .NET Architect & 11 years & Premature microservices split a 4-person team's velocity in half due to distributed debugging. \\
-    P2 & E-Commerce Tech Lead & 8 years & Modular monolith handled 50k daily orders cleanly on two VMs before extracting Catalog search. \\
-    P3 & Cloud DevOps Engineer & 7 years & RabbitMQ and distributed tracing require dedicated on-call discipline most SMEs lack. \\
-    P4 & Senior Backend Developer & 6 years & Cross-cutting pricing and tax rules are far safer inside ACID database transactions. \\
+    Taibi et al.\ (2017) \cite{taibi2017} & 21 industrial migration cases & Distributed debugging and integration testing overhead & Confirms operational penalty for SME teams of $\le 6$ engineers. \\
+    Soldani et al.\ (2018) \cite{soldani2018} & 51 industrial experience reports & Memory and infrastructure cost inflation from brokers/gateways & Corroborates the $+309.62\text{ MiB}$ idle RAM overhead measured in Chapter~4. \\
+    Fritzsch et al.\ (2019) \cite{fritzsch2019} & 14 enterprise refactoring cases & Cross-cutting changes causing lockstep service deployments & Mirrors Scenario~S5 ($3$ deployment units vs.\ $1$ in the monolith). \\
+    Fowler (2015) \cite{fowler2015monolith} & Industry pattern synthesis & Premature decomposition before domain boundaries stabilize & Supports Modular-Monolith-First strategy in Table~\ref{tab:decision-matrix}. \\
     \bottomrule
   \end{tabular}
 \end{table}

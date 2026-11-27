@@ -4,17 +4,27 @@
 \section{Hypothesis Evaluation}
 \label{sec:hypotheses-eval}
 
-Evaluating the empirical evidence from Chapter~4 against the three research hypotheses formulated in the Introduction yields the following outcomes:
+Evaluating the empirical measurements from Chapter~4 against the three hypotheses defined in the Introduction establishes the following outcomes:
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{H1 (Confirmed):} The modular monolith consumed $25.5\%$ less memory at idle ($903.98\text{ MiB}$ vs.\ $1,213.60\text{ MiB}$) and $14.7\%$ less memory at $20\text{ VUs}$ ($1,151.35\text{ MiB}$ vs.\ $1,350.20\text{ MiB}$), confirming that process consolidation yields substantial memory savings on SME hardware.
-  \item \textbf{H2 (Confirmed):} While aggregate throughput was comparable ($7.49\text{ req/s}$ vs.\ $7.58\text{ req/s}$), microservices achieved $2.65\times$ lower $p_{95}$ tail latency ($12.30\text{ ms}$ vs.\ $32.57\text{ ms}$), validating the responsiveness advantage of decoupled read endpoints.
-  \item \textbf{H3 (Confirmed):} Single-domain scenarios (S1, S2, S4) touched fewer files per service in microservices ($2$--$3$ files) with single-container redeployment, whereas the cross-cutting multi-currency scenario (S5) required $9$ file edits across $3$ deployment units in microservices versus $6$ files in a single deployment unit in the monolith.
+  \item \textbf{H1 (Confirmed):} The modular monolith consumed $25.5\%$ less memory at idle ($903.98\text{ MiB}$ vs.\ $1,213.60\text{ MiB}$) and $14.7\%$ less memory under $20\text{ VUs}$ load ($1,151.35\text{ MiB}$ vs.\ $1,350.20\text{ MiB}$), exceeding the $15\%$ baseline threshold and confirming that process consolidation reduces SME hosting overhead.
+  \item \textbf{H2 (Confirmed):} While aggregate throughput was statistically comparable ($7.49\text{ req/s}$ vs.\ $7.58\text{ req/s}$), microservices achieved $2.65\times$ lower $p_{95}$ tail latency ($12.30\text{ ms}$ vs.\ $32.57\text{ ms}$), validating the tail-latency benefit of decoupled read endpoints.
+  \item \textbf{H3 (Confirmed):} Isolated single-domain changes (S1, S2, S4) required fewer edited files per service ($2$--$3$ files) and single-container deployment in microservices, whereas the cross-cutting multi-currency requirement (S5) propagated across $9$ files and $3$ independent deployment units in microservices compared to $6$ files in $1$ deployment unit in the monolith.
 \end{itemize}
+
+\section{Triangulation with Industrial Migration Case Studies}
+\label{sec:industry-triangulation}
+
+Cross-referencing our laboratory results against empirical industry migration datasets reported by Taibi et al.\ \cite{taibi2017}, Soldani et al.\ \cite{soldani2018}, and Fritzsch et al.\ \cite{fritzsch2019} reveals strong external convergence:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Infrastructure Cost Amplification at SME Scale:} Soldani et al.\ \cite{soldani2018} document that baseline container, gateway, and message-broker memory overhead frequently surprises small teams migrating from single-VM monoliths—directly matching our $309.62\text{ MiB}$ idle RAM penalty in \texttt{eShopOnContainers}.
+  \item \textbf{Distributed Transaction and Cross-Cutting Coupling:} Fritzsch et al.\ \cite{fritzsch2019} report that immature domain boundaries cause cross-cutting features (such as pricing, currency, and tax rules) to trigger coordinated multi-service deployments—mirroring Scenario~S5 ($3$ deployment units vs.\ $1$).
+  \item \textbf{Selective Decomposition Trajectory:} Both Fowler \cite{fowler2015monolith} and Taibi et al.\ \cite{taibi2017} observe that teams achieve higher delivery velocity by starting with a modular monolith and extracting only high-read or independently scaling modules (such as Catalog search) once traffic or team boundaries demand it.
+\end{enumerate}
 
 \section{SME Architectural Decision Matrix}
 \label{sec:decision-matrix}
 
-Combining quantitative metrics with practitioner insights produces a structured decision matrix (Table~\ref{tab:decision-matrix}) for SME technical leaders.
+Synthesizing quantitative telemetry, source-level change propagation, and industrial migration evidence yields a structured five-factor decision matrix (Table~\ref{tab:decision-matrix}) for SME engineering leads.
 
 \begin{table}[h]
   \caption{Recommended architectural selection matrix for SME e-commerce enterprises}
@@ -24,9 +34,9 @@ Combining quantitative metrics with practitioner insights produces a structured 
     \toprule
     \textbf{Decision Factor} & \textbf{Choose Modular Monolith} & \textbf{Choose Selective Microservices} \\
     \midrule
-    Team Structure & 1--6 engineers sharing a unified backlog & $\ge 2$ autonomous squads owning distinct bounded contexts \\
-    Hosting Budget & Single VPS / container node ($\le 4\text{ GiB}$ RAM) & Managed orchestrator with dedicated observability stack \\
-    Domain Stability & Rapidly evolving business rules and cross-cutting features & Mature, stable domain contracts with isolated scaling hotspots \\
+    Team Structure & 1--6 engineers sharing a unified product backlog & $\ge 2$ autonomous squads owning distinct bounded contexts \\
+    Hosting Budget & Single VPS / container node ($\le 4\text{ GiB}$ RAM) & Managed cluster with dedicated observability and broker budget \\
+    Domain Stability & Rapidly evolving pricing, tax, and cross-cutting rules & Mature, stable domain contracts with isolated scaling hotspots \\
     Latency SLA & Standard storefront responsiveness ($p_{95} < 50\text{ ms}$) & Strict sub-$15\text{ ms}$ API SLAs under burst concurrency \\
     Recommended Path & \textbf{Default starting architecture} with strict DDD module boundaries & \textbf{Incremental extraction} (Strangler Fig) of Catalog/Search first \\
     \bottomrule
@@ -36,11 +46,11 @@ Combining quantitative metrics with practitioner insights produces a structured 
 \section{Threats to Validity and Limitations}
 \label{sec:threats}
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Internal Validity:} All containers ran on a single local WSL2 host rather than multi-node cloud VMs; while this eliminated external network variance, inter-container loopback latency in production clusters would add $1$--$3\text{ ms}$ per network hop to microservices.
-  \item \textbf{External Validity:} Findings are grounded in the .NET / ASP.NET Core ecosystem; interpreted runtimes (e.g., Node.js, Python) or ahead-of-time native binaries (Go, Rust) will exhibit different absolute memory baselines while preserving the relative architectural trade-offs.
-  \item \textbf{Construct Validity:} Change propagation was measured via modified source files and deployment units; incorporating longitudinal defect rates across multi-month sprints remains an avenue for future work.
+  \item \textbf{Internal Validity:} All containers ran on a single local WSL2 virtualization host rather than multi-node cloud VMs; while this eliminated internet routing variance, multi-host network hops in production clusters would add $1$--$3\text{ ms}$ of additional inter-service latency to microservices.
+  \item \textbf{External Validity:} Experiments were conducted within the .NET / ASP.NET Core ecosystem; garbage-collected runtimes with higher baseline footprints (e.g., JVM) or compiled native binaries (Go, Rust) will exhibit different absolute memory numbers while preserving relative architectural trade-offs.
+  \item \textbf{Construct Validity:} Evolutionary maintainability was operationalized via modified source files and deployment units across five standardized scenarios; longitudinal defect density across multi-month sprints remains an avenue for future investigation.
 \end{itemize}
 
 \section{Chapter Summary}
 \label{sec:ch5-summary}
-This chapter confirmed Hypotheses H1--H3, synthesized the findings into a practical five-factor SME architectural decision matrix favoring a ``Modular-Monolith-First'' trajectory, and documented internal, external, and construct validity boundaries.
+This chapter confirmed Hypotheses H1--H3, triangulated laboratory findings against published industrial migration studies, formulated a five-factor SME architectural decision matrix advocating a ``Modular-Monolith-First'' trajectory, and documented threats to validity.

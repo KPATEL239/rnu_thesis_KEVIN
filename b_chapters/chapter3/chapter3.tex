@@ -4,7 +4,7 @@
 \section{Hardware and Containerized Testbed Configuration}
 \label{sec:testbed}
 
-To reflect a resource-constrained SME server node without external cloud network jitter, all experiments were executed on a dedicated local virtualization host configured with deterministic resource ceilings. Table~\ref{tab:env-specs} documents the exact testbed hardware, runtime, and instrumentation versions.
+To simulate a resource-constrained SME cloud virtual machine without external internet routing jitter, all experiments were executed on an isolated local virtualization host configured with deterministic CPU, memory, and swap limits. Table~\ref{tab:env-specs} documents the exact testbed hardware, virtualization, and instrumentation stack.
 
 \begin{table}[h]
   \caption{Experimental testbed hardware, virtualization, and instrumentation specifications}
@@ -14,12 +14,12 @@ To reflect a resource-constrained SME server node without external cloud network
     \toprule
     \textbf{Component} & \textbf{Specification / Version} \\
     \midrule
-    Host Processor & Intel Core i7-1165G7 (4 physical cores / 8 threads, up to 4.70 GHz) \\
-    Host Operating System & Windows 11 (64-bit) with WSL2 Linux Kernel virtualization \\
+    Host Processor & Intel Core i7-1165G7 (4 physical cores / 8 threads, base 2.80 GHz, boost 4.70 GHz) \\
+    Host Operating System & Windows 11 (64-bit) running WSL2 Linux Kernel virtualization \\
     Allocated Virtual Memory & 5.0 GiB RAM ceiling, 4 virtual CPUs, 4.0 GiB swap (\texttt{.wslconfig}) \\
-    Container Runtime & Docker Desktop / Docker Engine (Linux containers) \\
+    Container Runtime & Docker Desktop / Docker Engine (Linux cgroups v2 container isolation) \\
     Load Generator & Grafana \texttt{k6} CLI (HTTP/1.1 keep-alive virtual user simulation) \\
-    Telemetry Collection & Docker \texttt{stats} daemon sampling, PowerShell stopwatch probes, Git diff analysis \\
+    Telemetry Collection & Docker \texttt{stats} daemon sampling, PowerShell stopwatch probes, Git diff inspection \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -32,7 +32,7 @@ The runtime evaluation protocol comprises four standardized measurement phases a
   \item \textbf{Cold-to-Ready Initialization Time ($T_{\text{ready}}$):} Measures elapsed wall-clock seconds from container startup command invocation until the primary storefront/catalog HTTP endpoint returns status \texttt{200 OK}.
   \item \textbf{Idle Memory Footprint ($M_{\text{idle}}$):} Records steady-state container resident memory (MiB) after readiness stabilization with zero active virtual users ($0\text{ VUs}$).
   \item \textbf{Sustained Storefront Load Profile ($10\text{ VUs}$, $120\text{ s}$):} Executes a continuous 2-minute \texttt{k6} workload simulating concurrent shoppers browsing catalog listings and product details, capturing median latency ($p_{50}$), 90th-percentile latency ($p_{90}$), 95th-percentile tail latency ($p_{95}$), aggregate throughput (req/s), and HTTP failure rate.
-  \item \textbf{Peak Concurrency Stress Memory ($M_{\text{load}}$, $20\text{ VUs}$):} Doubles concurrent virtual users to $20\text{ VUs}$ to measure peak container RAM allocation under saturation.
+  \item \textbf{Peak Concurrency Stress Memory ($M_{\text{load}}$, $20\text{ VUs}$):} Doubles concurrent virtual users to $20\text{ VUs}$ for 60 seconds to measure peak container RAM allocation under concurrency saturation.
 \end{enumerate}
 
 \begin{algorithm}[h]
@@ -42,30 +42,49 @@ The runtime evaluation protocol comprises four standardized measurement phases a
     \State Deploy stack $A \in \{\text{Monolith}, \text{Microservices}\}$ via Docker Compose
     \State Start high-resolution timer $t_0$; poll primary endpoint until HTTP $200$ at $t_1$
     \State Record $T_{\text{ready}} \gets t_1 - t_0$
-    \State Wait $15\text{ s}$ for JIT and connection pool stabilization; sample $M_{\text{idle}}$ via \texttt{docker stats}
+    \State Wait $15\text{ s}$ for JIT compilation and connection pool stabilization; sample $M_{\text{idle}}$ via \texttt{docker stats}
     \State Execute \texttt{k6 run --vus 10 --duration 120s} against catalog storefront route
-    \State Extract $p_{50}, p_{90}, p_{95}$, total requests, req/s, and error percentage
+    \State Extract $p_{50}, p_{90}, p_{95}$, completed requests, req/s, and HTTP error percentage
     \State Execute \texttt{k6 run --vus 20 --duration 60s} and record peak resident memory $M_{\text{load}}$
-    \State Tear down containers and purge transient network state before testing next stack
+    \State Tear down containers and clear transient state before benchmarking next stack
   \end{algorithmic}
 \end{algorithm}
 
-\section{Standardized Functional Evolution Scenarios}
+\section{Standardized Functional Evolution Scenarios and Code Mapping}
 \label{sec:change-scenarios}
 
-To evaluate Hypothesis~H3 (maintainability and change propagation), five realistic SME e-commerce feature modifications were specified and traced across both repositories:
+To evaluate Hypothesis~H3 (maintainability and change propagation), five representative SME e-commerce feature modifications were traced down to concrete C\# classes, entity models, DTOs, and database contexts across both solutions:
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Scenario S1 (Catalog Attribute Addition):} Add a structured \texttt{SustainabilityRating} field to catalog items and expose it in the product listing DTO.
-  \item \textbf{Scenario S2 (Basket Promotional Discount Rule):} Implement a tiered percentage discount rule when basket subtotal exceeds a threshold.
-  \item \textbf{Scenario S3 (Order Status Notification Hook):} Emit a domain/integration event when an order transitions to \texttt{Paid} status to trigger customer confirmation.
-  \item \textbf{Scenario S4 (Payment Gateway Adapter Swap):} Replace the mock payment provider implementation with a new external gateway client interface.
-  \item \textbf{Scenario S5 (Cross-Cutting Multi-Currency Display):} Introduce live exchange-rate conversion across catalog browsing, basket totals, and order summaries.
+  \item \textbf{Scenario S1 (Catalog Attribute Addition):} Add a \texttt{SustainabilityRating} integer property to catalog items and expose it in the storefront listing response.
+  \item \textbf{Scenario S2 (Basket Promotional Discount Rule):} Apply a 10\% tiered discount rule when basket subtotal exceeds a configurable threshold.
+  \item \textbf{Scenario S3 (Order Status Notification Hook):} Publish an event when an order transitions to \texttt{Paid} status to trigger customer email confirmation.
+  \item \textbf{Scenario S4 (Payment Gateway Adapter Swap):} Replace the stub payment processor with an external PSP adapter interface.
+  \item \textbf{Scenario S5 (Cross-Cutting Multi-Currency Display):} Introduce live currency conversion (EUR/USD/GBP) across catalog prices, basket totals, and order summaries.
 \end{itemize}
 
-\section{Practitioner Interview Protocol}
-\label{sec:interview-protocol}
-To complement laboratory benchmarks with real-world organizational context, semi-structured interviews were conducted with four senior software engineers and technical leads (each with 6--12 years of production experience in .NET/cloud e-commerce systems). Questions focused on team size thresholds for service extraction, hidden operational failure modes, and debugging overhead.
+Table~\ref{tab:code-mapping} maps the exact architectural layers and primary C\# components impacted in each repository.
+
+\begin{table}[h]
+  \caption{Source-level architectural mapping of evolution scenarios S1--S5 across both repositories}
+  \label{tab:code-mapping}
+  \centering
+  \begin{tabular}{p{2.3cm}p{5.6cm}p{5.8cm}}
+    \toprule
+    \textbf{Scenario} & \textbf{eShopOnWeb (Monolith Components)} & \textbf{eShopOnContainers (Microservices)} \\
+    \midrule
+    S1: Catalog Attribute & \texttt{CatalogItem.cs}, \texttt{CatalogContext.cs}, \texttt{CatalogViewModelService.cs}, Razor View & \texttt{Catalog.API/Model/CatalogItem.cs}, \texttt{CatalogContext.cs}, \texttt{CatalogController.cs} \\
+    S2: Basket Discount & \texttt{Basket.cs}, \texttt{BasketService.cs}, \texttt{BasketViewModelService.cs} & \texttt{Basket.API/Model/CustomerBasket.cs}, \texttt{BasketController.cs} \\
+    S3: Order Paid Hook & \texttt{Order.cs}, \texttt{OrderService.cs}, \texttt{IEmailSender.cs}, \texttt{EmailSender.cs} & \texttt{Ordering.API} (\texttt{OrderStatusChangedToPaid} event) + Notification/Webhook handler \\
+    S4: Payment Adapter & \texttt{IPaymentService.cs}, \texttt{PaymentService.cs}, \texttt{Program.cs} DI registration & \texttt{Payment.API} integration event handler + \texttt{Program.cs} DI registration \\
+    S5: Multi-Currency & \texttt{ICurrencyService}, \texttt{CatalogItem}, \texttt{BasketItem}, \texttt{OrderItem}, ViewModels, UI & \texttt{Catalog.API}, \texttt{Basket.API}, \texttt{Ordering.API} DTOs, proto/REST contracts, WebSPA \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Secondary Industry Case-Study Triangulation Protocol}
+\label{sec:triangulation-protocol}
+To validate whether laboratory metrics and static code-diff counts align with real-world SME production outcomes, empirical findings from Chapter~4 are cross-checked against documented industrial migration case studies reported by Taibi et al.\ \cite{taibi2017}, Soldani et al.\ \cite{soldani2018}, and Fritzsch et al.\ \cite{fritzsch2019}, focusing specifically on teams of 3--10 developers operating containerized e-commerce and web backends.
 
 \section{Chapter Summary}
 \label{sec:ch3-summary}
-This chapter detailed the 5.0~GiB WSL2/Docker testbed, formalized the four-stage runtime benchmarking algorithm, defined five standardized functional change scenarios (S1--S5), and outlined the practitioner interview protocol used to generate the empirical data in Chapter~4.
+This chapter specified the 5.0~GiB WSL2/Docker testbed, formalized the four-stage runtime benchmarking algorithm, mapped exact C\# components across five functional evolution scenarios (S1--S5), and established the secondary industrial triangulation protocol.
