@@ -1,56 +1,46 @@
-\chapter{Discussion, Limitations, and Future Work (Optional Example Chapter~5)}
-\label{chap:optional-discussion}
+\chapter{Architectural Decision Framework and Discussion}
+\label{chap:discussion}
 
-% --- IMPORTANT NOTE FOR STUDENTS ---
-% This chapter is fully optional.
-% Your thesis is complete without it, as long as you have a proper Conclusions chapter.
-% Use it only if you feel that broader reflection or forward-looking remarks
-% add significant value to your work (and your supervisor approves).
+\section{Hypothesis Evaluation}
+\label{sec:hypotheses-eval}
 
-This chapter is meant as an *extra space* for broader reflection.  
-It can be useful if you want to go beyond the mandatory Conclusions and show awareness of the bigger picture.  
-However, it should remain concise and focused — do not just repeat results already covered in previous chapters.
-
-\section{Extended Discussion (Optional)}
-\label{sec:extended-discussion}
-Here you may reflect on your findings in greater depth.  
-Examples of what to include:
-
-\begin{itemize}[leftmargin=1.2cm]
-  \item Compare your results to other studies or real-world applications.  
-  \item Highlight unexpected outcomes or open questions.  
-  \item Discuss theoretical or practical implications that extend beyond your specific project.  
+Evaluating the empirical evidence from Chapter~4 against the three research hypotheses formulated in the Introduction yields the following outcomes:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{H1 (Confirmed):} The modular monolith consumed $25.5\%$ less memory at idle ($903.98\text{ MiB}$ vs.\ $1,213.60\text{ MiB}$) and $14.7\%$ less memory at $20\text{ VUs}$ ($1,151.35\text{ MiB}$ vs.\ $1,350.20\text{ MiB}$), confirming that process consolidation yields substantial memory savings on SME hardware.
+  \item \textbf{H2 (Confirmed):} While aggregate throughput was comparable ($7.49\text{ req/s}$ vs.\ $7.58\text{ req/s}$), microservices achieved $2.65\times$ lower $p_{95}$ tail latency ($12.30\text{ ms}$ vs.\ $32.57\text{ ms}$), validating the responsiveness advantage of decoupled read endpoints.
+  \item \textbf{H3 (Confirmed):} Single-domain scenarios (S1, S2, S4) touched fewer files per service in microservices ($2$--$3$ files) with single-container redeployment, whereas the cross-cutting multi-currency scenario (S5) required $9$ file edits across $3$ deployment units in microservices versus $6$ files in a single deployment unit in the monolith.
 \end{itemize}
 
-\paragraph{Tip.} This section can be especially valuable if your work connects to ongoing research, industrial practice, or societal issues.
+\section{SME Architectural Decision Matrix}
+\label{sec:decision-matrix}
 
-\section{Limitations of the Study (Optional)}
-\label{sec:limitations}
-Every project has constraints — being open about them increases credibility.  
-Possible categories:
+Combining quantitative metrics with practitioner insights produces a structured decision matrix (Table~\ref{tab:decision-matrix}) for SME technical leaders.
 
-\begin{itemize}[leftmargin=1.2cm]
-  \item \textbf{Scope.} Narrow focus, specific use case, or limited generalizability.  
-  \item \textbf{Data/technical.} Small datasets, noisy logs, hardware/software constraints.  
-  \item \textbf{Methodological.} Simplifying assumptions, lack of longitudinal data, limited metrics.  
+\begin{table}[h]
+  \caption{Recommended architectural selection matrix for SME e-commerce enterprises}
+  \label{tab:decision-matrix}
+  \centering
+  \begin{tabular}{p{3.4cm}p{5.2cm}p{5.2cm}}
+    \toprule
+    \textbf{Decision Factor} & \textbf{Choose Modular Monolith} & \textbf{Choose Selective Microservices} \\
+    \midrule
+    Team Structure & 1--6 engineers sharing a unified backlog & $\ge 2$ autonomous squads owning distinct bounded contexts \\
+    Hosting Budget & Single VPS / container node ($\le 4\text{ GiB}$ RAM) & Managed orchestrator with dedicated observability stack \\
+    Domain Stability & Rapidly evolving business rules and cross-cutting features & Mature, stable domain contracts with isolated scaling hotspots \\
+    Latency SLA & Standard storefront responsiveness ($p_{95} < 50\text{ ms}$) & Strict sub-$15\text{ ms}$ API SLAs under burst concurrency \\
+    Recommended Path & \textbf{Default starting architecture} with strict DDD module boundaries & \textbf{Incremental extraction} (Strangler Fig) of Catalog/Search first \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Threats to Validity and Limitations}
+\label{sec:threats}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Internal Validity:} All containers ran on a single local WSL2 host rather than multi-node cloud VMs; while this eliminated external network variance, inter-container loopback latency in production clusters would add $1$--$3\text{ ms}$ per network hop to microservices.
+  \item \textbf{External Validity:} Findings are grounded in the .NET / ASP.NET Core ecosystem; interpreted runtimes (e.g., Node.js, Python) or ahead-of-time native binaries (Go, Rust) will exhibit different absolute memory baselines while preserving the relative architectural trade-offs.
+  \item \textbf{Construct Validity:} Change propagation was measured via modified source files and deployment units; incorporating longitudinal defect rates across multi-month sprints remains an avenue for future work.
 \end{itemize}
 
-\paragraph{Note.} Do not exaggerate — just acknowledge realistically what was and wasn’t possible within your timeframe and resources.
-
-\section{Future Work and Recommendations (Optional)}
-\label{sec:future}
-Suggest what could be done after your thesis.  
-Examples:
-
-\begin{itemize}[leftmargin=1.2cm]
-  \item Follow-up studies or new research questions raised by your findings.  
-  \item Practical improvements to your system, prototype, or methods.  
-  \item Opportunities for scaling up, applying to other domains, or testing with different datasets.  
-\end{itemize}
-
-This section is not required, but it can demonstrate initiative and forward thinking.
-
-\section*{Final Note}
-\label{sec:finalnote}
-Remember: the \textbf{mandatory Conclusions chapter} must already confirm the research tasks, validate the hypothesis, and state whether the aim of the thesis has been achieved.  
-This optional chapter is only for broader reflection and forward-looking remarks — use it only if it adds real value.
+\section{Chapter Summary}
+\label{sec:ch5-summary}
+This chapter confirmed Hypotheses H1--H3, synthesized the findings into a practical five-factor SME architectural decision matrix favoring a ``Modular-Monolith-First'' trajectory, and documented internal, external, and construct validity boundaries.

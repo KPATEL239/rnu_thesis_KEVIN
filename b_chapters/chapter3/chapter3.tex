@@ -1,68 +1,71 @@
-\chapter{Empirical Study / Practical Research (Example Chapter~3)}
+\chapter{Experimental Testbed and Evaluation Methodology}
 \label{chap:empirical}
 
-% --- IMPORTANT NOTE FOR STUDENTS ---
-% This is only a suggested structure. 
-% You may adjust, merge, expand, or shorten sections depending on your topic,
-% as long as the choices are approved by your supervisor.
-% Some theses have a large empirical part, others a very small one. 
-% Adapt to your own case.
+\section{Hardware and Containerized Testbed Configuration}
+\label{sec:testbed}
 
-This chapter usually presents the applied or empirical part of the thesis: an experiment, prototype, survey, simulation, or case study.  
-However, the exact scope depends on your project. In some theses, Chapters~2 and~3 are merged into one; in others, this chapter may be split into two separate ones (e.g., “Implementation” and “Evaluation”).
+To reflect a resource-constrained SME server node without external cloud network jitter, all experiments were executed on a dedicated local virtualization host configured with deterministic resource ceilings. Table~\ref{tab:env-specs} documents the exact testbed hardware, runtime, and instrumentation versions.
 
-\section{Design of the Study (Example Section)}
-\label{sec:design}
-Explain how your empirical/practical work was organized.  
-Typical points to include (adapt as needed):
-
-\begin{itemize}[leftmargin=1.2cm]
-  \item \textbf{Objectives.} What you wanted to achieve or test.  
-  \item \textbf{Setup.} Hardware, software, datasets, or infrastructure used.  
-  \item \textbf{Participants or subjects (if any).} For surveys, experiments, or usability tests.  
-  \item \textbf{Procedures.} How the study/experiment was carried out, in enough detail to be reproducible.  
-\end{itemize}
-
-\paragraph{Note.} If your work is implementation-heavy, this section can describe the system architecture, algorithms, or workflows you built. If it is more research-focused, describe the methodology and design choices.
-
-\section{Results of the Study (Example Section)}
-\label{sec:results}
-Present the main outcomes clearly and systematically.  
-Examples:
-
-\begin{itemize}[leftmargin=1.2cm]
-  \item Tables or charts with performance benchmarks, error rates, or runtime.  
-  \item Screenshots or diagrams of a prototype or interface.  
-  \item Summaries of survey/interview data.  
-\end{itemize}
-
-% --- Example figure (replace or remove) ---
-\begin{figure}[h]
+\begin{table}[h]
+  \caption{Experimental testbed hardware, virtualization, and instrumentation specifications}
+  \label{tab:env-specs}
   \centering
-  \includegraphics[width=0.6\linewidth]{b_chapters/chapter1/assets/RNU_large_logo.png}
-  \figsource{Replace with your own chart or prototype screenshot.}
-  \caption{Example chart of study results (dummy figure).}
-  \label{fig:study-results}
-\end{figure}
+  \begin{tabular}{p{4.4cm}p{9.6cm}}
+    \toprule
+    \textbf{Component} & \textbf{Specification / Version} \\
+    \midrule
+    Host Processor & Intel Core i7-1165G7 (4 physical cores / 8 threads, up to 4.70 GHz) \\
+    Host Operating System & Windows 11 (64-bit) with WSL2 Linux Kernel virtualization \\
+    Allocated Virtual Memory & 5.0 GiB RAM ceiling, 4 virtual CPUs, 4.0 GiB swap (\texttt{.wslconfig}) \\
+    Container Runtime & Docker Desktop / Docker Engine (Linux containers) \\
+    Load Generator & Grafana \texttt{k6} CLI (HTTP/1.1 keep-alive virtual user simulation) \\
+    Telemetry Collection & Docker \texttt{stats} daemon sampling, PowerShell stopwatch probes, Git diff analysis \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-\paragraph{Tip.} Do not over-interpret here — keep deep discussion for Chapter~\ref{chap:discussion}.  
-The focus here is on presenting what you observed.
+\section{Benchmarking Protocol and Workload Design}
+\label{sec:benchmark-protocol}
 
-\section{Evaluation and Interpretation (Optional)}
-\label{sec:evaluation}
-In some topics it is useful to add a subsection where you briefly evaluate your results against expectations or benchmarks.  
-Examples: compare against a baseline algorithm, test statistical significance, or highlight unexpected patterns.  
-If this does not fit your project, you can skip or merge it into the next chapter.
+The runtime evaluation protocol comprises four standardized measurement phases applied identically to both architectures:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Cold-to-Ready Initialization Time ($T_{\text{ready}}$):} Measures elapsed wall-clock seconds from container startup command invocation until the primary storefront/catalog HTTP endpoint returns status \texttt{200 OK}.
+  \item \textbf{Idle Memory Footprint ($M_{\text{idle}}$):} Records steady-state container resident memory (MiB) after readiness stabilization with zero active virtual users ($0\text{ VUs}$).
+  \item \textbf{Sustained Storefront Load Profile ($10\text{ VUs}$, $120\text{ s}$):} Executes a continuous 2-minute \texttt{k6} workload simulating concurrent shoppers browsing catalog listings and product details, capturing median latency ($p_{50}$), 90th-percentile latency ($p_{90}$), 95th-percentile tail latency ($p_{95}$), aggregate throughput (req/s), and HTTP failure rate.
+  \item \textbf{Peak Concurrency Stress Memory ($M_{\text{load}}$, $20\text{ VUs}$):} Doubles concurrent virtual users to $20\text{ VUs}$ to measure peak container RAM allocation under saturation.
+\end{enumerate}
 
-\section{Sub-Conclusions (for Chapter~3)}
-\label{sec:subconcl3}
-End with a short summary (2–3 paragraphs).  
-Example points:
+\begin{algorithm}[h]
+  \caption{Reproducible Benchmark Execution Protocol for Architecture $A$}
+  \label{alg:benchmark}
+  \begin{algorithmic}[1]
+    \State Deploy stack $A \in \{\text{Monolith}, \text{Microservices}\}$ via Docker Compose
+    \State Start high-resolution timer $t_0$; poll primary endpoint until HTTP $200$ at $t_1$
+    \State Record $T_{\text{ready}} \gets t_1 - t_0$
+    \State Wait $15\text{ s}$ for JIT and connection pool stabilization; sample $M_{\text{idle}}$ via \texttt{docker stats}
+    \State Execute \texttt{k6 run --vus 10 --duration 120s} against catalog storefront route
+    \State Extract $p_{50}, p_{90}, p_{95}$, total requests, req/s, and error percentage
+    \State Execute \texttt{k6 run --vus 20 --duration 60s} and record peak resident memory $M_{\text{load}}$
+    \State Tear down containers and purge transient network state before testing next stack
+  \end{algorithmic}
+\end{algorithm}
 
-\begin{itemize}[leftmargin=1.2cm]
-  \item Key empirical findings (what was achieved, measured, or demonstrated).  
-  \item Relation to the aim and hypothesis from the Introduction.  
-  \item How these findings prepare for the next step — either a discussion chapter (Chapter~\ref{chap:discussion}) or the final conclusions (Chapter~\ref{chap:conclusions}).  
+\section{Standardized Functional Evolution Scenarios}
+\label{sec:change-scenarios}
+
+To evaluate Hypothesis~H3 (maintainability and change propagation), five realistic SME e-commerce feature modifications were specified and traced across both repositories:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Scenario S1 (Catalog Attribute Addition):} Add a structured \texttt{SustainabilityRating} field to catalog items and expose it in the product listing DTO.
+  \item \textbf{Scenario S2 (Basket Promotional Discount Rule):} Implement a tiered percentage discount rule when basket subtotal exceeds a threshold.
+  \item \textbf{Scenario S3 (Order Status Notification Hook):} Emit a domain/integration event when an order transitions to \texttt{Paid} status to trigger customer confirmation.
+  \item \textbf{Scenario S4 (Payment Gateway Adapter Swap):} Replace the mock payment provider implementation with a new external gateway client interface.
+  \item \textbf{Scenario S5 (Cross-Cutting Multi-Currency Display):} Introduce live exchange-rate conversion across catalog browsing, basket totals, and order summaries.
 \end{itemize}
 
-\paragraph{Reminder.} The conclusions here should be short and local to this chapter. The overall “big picture” conclusions must still be saved for the dedicated \textbf{Conclusions chapter}.
+\section{Practitioner Interview Protocol}
+\label{sec:interview-protocol}
+To complement laboratory benchmarks with real-world organizational context, semi-structured interviews were conducted with four senior software engineers and technical leads (each with 6--12 years of production experience in .NET/cloud e-commerce systems). Questions focused on team size thresholds for service extraction, hidden operational failure modes, and debugging overhead.
+
+\section{Chapter Summary}
+\label{sec:ch3-summary}
+This chapter detailed the 5.0~GiB WSL2/Docker testbed, formalized the four-stage runtime benchmarking algorithm, defined five standardized functional change scenarios (S1--S5), and outlined the practitioner interview protocol used to generate the empirical data in Chapter~4.
