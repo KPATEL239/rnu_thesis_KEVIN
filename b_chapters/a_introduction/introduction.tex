@@ -1,34 +1,28 @@
 \unchapter{Introduction}
 
-The introduction outlines the relevance of the chosen topic, its aim, object and subject of study, formulated research problem, research tasks, and applied methods. It also may include the research hypothesis and information about the approbation (presentation, publication, or expert review) of the results.  
+\paragraph{Relevance and Problem Context.}
+Small and medium-sized e-commerce enterprises (SMEs) operate under acute engineering and financial constraints: small engineering teams (typically two to eight developers), limited monthly cloud infrastructure budgets, and intense commercial pressure to ship storefront, pricing, and checkout features rapidly \cite{newman2021,ford2022}. Over the past decade, microservices architecture has become the dominant paradigm among large technology enterprises seeking independent service scalability and organizational autonomy \cite{fowler2014,dragoni2017}. However, adopting distributed microservices prematurely introduces substantial operational overhead—inter-service network latency, distributed transaction management, container orchestration complexity, and elevated baseline memory consumption—that can erode an SME's velocity and infrastructure margin \cite{fowler2015monolith,soldani2018}. Conversely, a poorly structured monolithic application risks tight coupling, slow release cycles, and localized performance bottlenecks as catalog size and concurrent traffic grow \cite{parnas1972,richardson2018}.
 
-\textbf{Topicality of the problem:}  
-Briefly describe why the selected topic is important and relevant. This may include current challenges in the industry, social or economic context, scientific novelty, or practical application.  
+\paragraph{Research Object and Subject.}
+The \textbf{object} of this study is backend software architecture for small and medium-sized e-commerce web applications. The \textbf{subject} of the study is the empirical trade-off space between a modular monolithic architecture and a distributed microservices architecture across runtime resource footprint, request latency, throughput stability, and functional change propagation.
 
-\textbf{Aim of the study:}  
-Clearly define the main purpose of the work. The aim is usually expressed in one sentence and should not be too broad or too narrow. Example: “The aim of the study is to develop recommendations for improving [system/process/topic] in [context/field].”  
+\paragraph{Aim and Research Tasks.}
+The \textbf{aim} of this Bachelor's thesis is to evaluate whether a modular monolithic architecture or a microservices architecture provides a superior engineering and operational balance for SME e-commerce platforms, and to formulate an evidence-based architectural decision framework. To achieve this aim, the following tasks are executed:
+\begin{enumerate}[leftmargin=1.5em]
+  \item Synthesize theoretical foundations of software modularity, domain-driven design, and distributed systems trade-offs from academic and industry literature (Chapter~1).
+  \item Analyze SME e-commerce operational constraints, workload patterns, and architectural quality attributes aligned with ISO/IEC~25010:2023 (Chapter~2).
+  \item Design and deploy a reproducible containerized experimental testbed comparing two production-grade .NET reference applications: \texttt{eShopOnWeb} (modular monolith) and \texttt{eShopOnContainers} (microservices) (Chapter~3).
+  \item Execute controlled runtime benchmarks (startup readiness, idle and under-load memory, median and tail latency, throughput, and error rates) alongside five standardized functional evolution scenarios (Chapter~4).
+  \item Triangulate quantitative measurements with qualitative insights from practitioner interviews to derive a structured SME architectural decision matrix and evaluate threats to validity (Chapter~5).
+\end{enumerate}
 
-\textbf{Object of the study:}  
-Indicate the broader field or phenomenon under investigation (e.g., “entrepreneurial activity,” “information systems,” “educational processes”).  
+\paragraph{Research Hypotheses.}
+Three testable hypotheses guide the empirical investigation:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{H1 (Resource Efficiency):} Under SME-scale hardware constraints, the modular monolithic architecture will exhibit at least 15\% lower baseline and under-load memory consumption than the equivalent microservices deployment due to the elimination of per-service runtime processes, API gateways, and message brokers.
+  \item \textbf{H2 (Tail Latency and Throughput):} Under concurrent read-heavy storefront workloads, the microservices architecture will achieve lower 95th-percentile ($p_{95}$) tail latency through independent service concurrency and lightweight read models, while maintaining comparable aggregate throughput.
+  \item \textbf{H3 (Change Localization vs.\ Cross-Cutting Propagation):} Isolated domain changes will require fewer modified files in microservices, whereas cross-cutting domain changes will propagate across significantly more files and deployment units in microservices than in a modular monolith.
+\end{itemize}
 
-\textbf{Subject of the study:}  
-Specify the narrower aspect within the object that will be analyzed (e.g., “employee motivation system,” “data warehouse design methodology,” “student performance evaluation methods”).  
-
-\textbf{Research problem:}  
-Formulate the main problem that the study addresses. This can be expressed as a contradiction, challenge, or knowledge gap (e.g., “high staff turnover,” “lack of effective data integration,” “insufficient methodological guidance”).  
-
-\textbf{Tasks of the study:}  
-List the specific steps needed to achieve the aim. Tasks are usually formulated as 4–6 items and should correspond directly to the structure of the thesis. For example:  
-1. Review theoretical approaches and relevant literature.  
-2. Analyze the chosen case, field, or system.  
-3. Conduct empirical or practical research.  
-4. Develop proposals, models, or improvements and evaluate their efficiency.  
-
-\textbf{Hypothesis (if applicable):}  
-Formulate a testable statement about the expected outcome. Example: “Implementing the proposed measures will improve service quality and reduce costs.”  
-
-\textbf{Research methods:}  
-Indicate the methods used in the work (e.g., literature analysis, surveys, experiments, case studies, statistical analysis, modelling, comparative analysis).  
-
-\textbf{Approbation of the study (if any):}  
-Mention where and how the results have been presented or evaluated (e.g., student conferences, publications, expert reviews).  
+\paragraph{Methodology and Structure.}
+The research employs a mixed-methods empirical engineering design combining systematic literature review, static source-code dependency and change-impact analysis, reproducible Docker and \texttt{k6} load benchmarking, and semi-structured interviews with senior backend practitioners. Chapter~1 establishes the theoretical framework; Chapter~2 defines SME requirements and maps the thesis tasks; Chapter~3 specifies the experimental testbed and change scenarios; Chapter~4 presents quantitative empirical results; and Chapter~5 synthesizes the decision framework and limitations.

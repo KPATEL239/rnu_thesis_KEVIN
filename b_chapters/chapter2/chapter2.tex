@@ -1,93 +1,91 @@
-\chapter{Case / System Analysis (Example Chapter~2)}
+\chapter{SME E-Commerce Domain and Architectural Requirements}
 \label{chap:analysis}
 
-% --- IMPORTANT NOTE FOR STUDENTS ---
-% This is only a suggested structure and sample content.
-% You are free to modify, reorder, merge, or rename sections
-% if it makes sense for your topic — as long as your supervisor agrees.
+\section{Operational Characteristics of SME E-Commerce Platforms}
+\label{sec:sme-domain}
 
-This chapter often provides a structured analysis of the case, dataset, or system that your thesis investigates.  
-However, its scope and layout depend heavily on the chosen topic. Some theses merge this part into the empirical chapter; others expand it into multiple chapters.  
-Think of the following sections as \emph{examples}, not as mandatory rules.
+Small and medium-sized e-commerce enterprises exhibit distinct technical and organizational profiles compared to hyperscale marketplaces \cite{ford2022,newman2021}. Table~\ref{tab:sme-profile} summarizes the structural parameters that govern architectural feasibility in an SME setting.
 
-\section{General Characteristics of the Case / System (Example Section)}
-\label{sec:case}
-Here you may describe the case or system under study (e.g., an IT application, dataset, algorithm, protocol, or infrastructure).  
-Mention background, design, stakeholders, or technical architecture.  
-
-\paragraph{Note.} Adapt the level of detail to your project.  
-If your work is purely theoretical, this section can be shorter. If it is applied to a concrete system or dataset, give enough context so the reader understands what is being studied.
-
-\section{Analysis of Internal and External Environment (Optional Example)}
-\label{sec:env}
-Depending on your topic, you might include a structured breakdown of the system.  
-Possible angles include (choose those that fit, or invent your own):
-
-\begin{itemize}[leftmargin=1.2cm]
-  \item \textbf{Architecture.} Components, modules, services, or data pipelines.
-  \item \textbf{Performance.} Scalability, latency, throughput, bottlenecks.
-  \item \textbf{Security and reliability.} Threats, vulnerabilities, resilience.
-  \item \textbf{External factors.} Standards, APIs, dependencies, regulations.
-\end{itemize}
-
-Support your analysis with diagrams, tables, or references if relevant.
-
-% --- Example figure (replace or remove) ---
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.65\linewidth]{b_chapters/chapter1/assets/RNU_large_logo.png}
-  \figsource{Replace with your own system diagram (if needed).}
-  \caption{Example system architecture diagram.}
-  \label{fig:analysis-example}
-\end{figure}
-
-% --- Example table (replace or remove) ---
-{\singlespacing
 \begin{table}[h]
-  \caption{Example system metrics (dummy data)}
-  \label{tab:analysis-example}
+  \caption{Operational and technical characteristics of SME e-commerce enterprises}
+  \label{tab:sme-profile}
   \centering
-  \begin{tabular}{lrr}
+  \begin{tabular}{p{3.8cm}p{5.2cm}p{5.2cm}}
     \toprule
-    Metric & Baseline value & Target value \\
+    \textbf{Dimension} & \textbf{SME Reality} & \textbf{Architectural Implication} \\
     \midrule
-    Response time (ms)  & 240   & 120   \\
-    Uptime (\%)         & 97.5  & 99.9  \\
-    Requests / second   & 350   & 1000  \\
+    Engineering Team Size & 2--8 full-stack or backend developers & High cognitive cost if managing $>5$ repositories and pipelines \\
+    Monthly Cloud Budget & \$50--\$400/month (single VPS or small container cluster) & Baseline RAM and CPU overhead directly impacts hosting cost \\
+    Traffic Profile & Steady daytime browsing with seasonal promotional spikes & Low tail latency ($p_{95}$) matters more than multi-region clustering \\
+    Feature Velocity & Weekly updates to promotions, catalog fields, and payment gateways & Cross-cutting changes must not stall release coordination \\
+    DevOps Maturity & Automated CI/CD with minimal dedicated SRE staff & Distributed tracing and saga orchestration add high operational risk \\
     \bottomrule
   \end{tabular}
 \end{table}
-}
 
-\section{Context, Constraints, and Risks (Optional)}
-\label{sec:constraints}
-In some topics, it is useful to state the limitations and boundary conditions that affect your system. Examples:
+\section{Functional Domains of a Standard E-Commerce System}
+\label{sec:ecommerce-domains}
 
-\begin{itemize}[leftmargin=1.2cm]
-  \item Technical constraints (hardware, data availability, standards compliance).
-  \item Research constraints (time, scope, access rights).
-  \item Risks (privacy, security, reliability, scalability challenges).
-\end{itemize}
+Regardless of architectural topology, a modern e-commerce backend decomposes logically into five core bounded contexts \cite{evans2003,richardson2018}:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Catalog Management:} Product listings, categories, brands, pricing metadata, and media assets (read-dominated, $>80\%$ of storefront HTTP traffic).
+  \item \textbf{Shopping Basket:} Session- or user-bound cart state, item quantities, and promotional discount calculations.
+  \item \textbf{Ordering and Checkout:} Transactional order creation, stock reservation, shipping address validation, and order status transitions.
+  \item \textbf{Payment Processing:} Integration with external payment service providers (PSPs), authorization callbacks, and refund workflows.
+  \item \textbf{Identity and Access:} Customer registration, authentication tokens, role-based authorization, and profile management.
+\end{enumerate}
 
-This subsection can be skipped if not relevant.
+\section{Structural Topology of the Evaluated Reference Systems}
+\label{sec:topologies}
 
-\section{Data and Methods for the Analysis (Example)}
-\label{sec:datamethods}
-Briefly outline what data and methods you are using here.  
-Examples: logs, benchmark datasets, architectural specifications, monitoring tools.  
-Methods could include profiling, simulation, descriptive statistics, or qualitative inspection.  
-Adapt this to your project; the goal is only to show that your analysis has a methodological basis.
+To ensure an unbiased, apples-to-apples empirical evaluation, this study selects Microsoft's two official .NET architectural reference applications—\texttt{eShopOnWeb} \cite{msft_eshoponweb} and \texttt{eShopOnContainers} \cite{msft_eshoponcontainers}—which implement the exact same e-commerce domain within the C\# / ASP.NET Core ecosystem. Figure~\ref{fig:arch-comparison} contrasts their structural topologies.
 
-\section{Sub-Conclusions (for Chapter~2)}
-\label{sec:subconcl}
-End with a short synthesis (typically 1–3 paragraphs).  
-Example points to cover:
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}[
+    node distance=0.7cm and 0.9cm,
+    svc/.style={rectangle, draw=black!80, thick, rounded corners=2pt, minimum width=2.4cm, minimum height=0.65cm, align=center, font=\scriptsize},
+    db/.style={cylinder, shape border rotate=90, draw=black!80, thick, aspect=0.25, minimum width=1.8cm, minimum height=0.65cm, align=center, font=\scriptsize},
+    box/.style={rectangle, draw=black!60, dashed, rounded corners=4pt, inner sep=8pt}
+  ]
+    % Monolith Side
+    \node[svc, fill=blue!8, minimum width=4.6cm] (m_web) {ASP.NET Core Web / API Host};
+    \node[svc, below=0.45cm of m_web, minimum width=4.6cm] (m_app) {ApplicationCore (Catalog, Basket, Order)};
+    \node[svc, below=0.45cm of m_app, minimum width=4.6cm] (m_inf) {Infrastructure (EF Core Repositories)};
+    \node[db, below=0.55cm of m_inf] (m_db) {SQL Server DB};
+    \node[box, fit=(m_web)(m_app)(m_inf), label=above:{\small\textbf{(a) Modular Monolith (eShopOnWeb)}}] (m_box) {};
 
-\begin{itemize}[leftmargin=1.2cm]
-  \item What the analysis revealed (main technical insights).
-  \item Which constraints/risks are most critical for your research.
-  \item How this motivates the next step (empirical study in Chapter~\ref{chap:empirical}).
-\end{itemize}
+    \draw[->, thick] (m_web) -- (m_app);
+    \draw[->, thick] (m_app) -- (m_inf);
+    \draw[->, thick] (m_inf) -- (m_db);
 
-\paragraph{Reminder.} This subsection is not meant to repeat the whole chapter — just connect the dots and prepare for the next one.
+    % Microservices Side
+    \node[svc, fill=orange!10, right=2.4cm of m_web, minimum width=4.8cm] (s_gw) {Envoy / YARP API Gateway};
+    \node[svc, below left=0.55cm and -0.4cm of s_gw, minimum width=1.45cm] (s_cat) {Catalog API};
+    \node[svc, right=0.2cm of s_cat, minimum width=1.45cm] (s_bas) {Basket API};
+    \node[svc, right=0.2cm of s_bas, minimum width=1.45cm] (s_ord) {Ordering API};
+    \node[svc, below=0.5cm of s_bas, minimum width=4.8cm, fill=gray!10] (s_bus) {RabbitMQ Event Bus};
+    \node[db, below=0.5cm of s_cat, minimum width=1.3cm] (d_cat) {SQL};
+    \node[db, below=0.5cm of s_bas, minimum width=1.3cm] (d_bas) {Redis};
+    \node[db, below=0.5cm of s_ord, minimum width=1.3cm] (d_ord) {SQL};
+    \node[box, fit=(s_gw)(s_cat)(s_ord)(s_bus), label=above:{\small\textbf{(b) Microservices (eShopOnContainers)}}] (s_box) {};
 
+    \draw[->, thick] (s_gw) -- (s_cat);
+    \draw[->, thick] (s_gw) -- (s_bas);
+    \draw[->, thick] (s_gw) -- (s_ord);
+    \draw[<->, thick] (s_cat) -- (s_bus);
+    \draw[<->, thick] (s_bas) -- (s_bus);
+    \draw[<->, thick] (s_ord) -- (s_bus);
+    \draw[->, thick] (s_bus) -- (d_cat);
+    \draw[->, thick] (s_bus) -- (d_bas);
+    \draw[->, thick] (s_bus) -- (d_ord);
+  \end{tikzpicture}
+  \caption{Structural comparison of the evaluated .NET reference systems: (a) in-process layered modular monolith vs.\ (b) distributed microservices with API gateway and event bus.}
+  \label{fig:arch-comparison}
+\end{figure}
+
+In \texttt{eShopOnWeb}, Clean Architecture separates \texttt{Web}, \texttt{ApplicationCore}, and \texttt{Infrastructure} into distinct class libraries compiled into a single deployment unit backed by SQL Server. In \texttt{eShopOnContainers}, each bounded context runs as an isolated container image with independent persistence (SQL Server, Redis) coordinated via an API gateway and RabbitMQ event bus.
+
+\section{Chapter Summary}
+\label{sec:ch2-summary}
+This chapter defined the resource, team, and traffic constraints of SME e-commerce platforms, decomposed the system into five core bounded contexts, and mapped the structural topologies of \texttt{eShopOnWeb} and \texttt{eShopOnContainers} as the empirical comparison pair.

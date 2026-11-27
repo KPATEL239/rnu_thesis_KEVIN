@@ -1,21 +1,12 @@
 \frontmatterpage
 \unchapter{Abstract}
 
-The abstract is a short summary of the Bachelor Paper. It should give the reader a clear overview of the topic, the structure of the thesis, the methods applied, and the main findings. The abstract must not exceed 300 words and must be written as one continuous text (no bullet points, tables, figures, or references).  
+Selecting an appropriate backend software architecture is a decisive engineering and financial choice for small and medium-sized e-commerce enterprises (SMEs), which must balance rapid feature delivery against tight infrastructure budgets and small development teams. This Bachelor's thesis presents a controlled empirical comparison between a modular monolithic architecture and a distributed microservices architecture using two production-grade reference implementations: Microsoft \texttt{eShopOnWeb} and \texttt{eShopOnContainers}.
 
-The abstract typically begins with a \textbf{brief introduction to the topic}. State in 1–2 sentences what the paper is about and why the topic is relevant. Do not repeat the full aim, tasks, or hypothesis here – these are covered in the Introduction.  
+The thesis consists of five chapters. Chapter 1 reviews the theoretical foundations of software modularity, domain-driven design, and distributed systems trade-offs. Chapter 2 analyzes the operational constraints, traffic profiles, and evolution requirements of SME e-commerce platforms. Chapter 3 details the containerized experimental testbed, workload generation protocol, and five standardized functional change scenarios. Chapter 4 reports quantitative benchmark measurements and code-change propagation results across both architectures. Chapter 5 synthesizes the empirical evidence into an actionable architectural decision framework and evaluates threats to validity.
 
-Next, provide a \textbf{chapter-by-chapter overview of the structure of the thesis}.  
-Example:  
-"The Bachelor Paper consists of <NUMBER OF CHAPTERS>. Chapter 1 reviews <THEORETICAL FRAMEWORK>. Chapter 2 presents <ANALYSIS OF FIELD/CASE/STUDY OBJECT>. Chapter 3 contains <EMPIRICAL STUDY OR PRACTICAL RESEARCH>. Chapter 4 proposes <IMPROVEMENTS / MODEL / SOLUTIONS>."  
+The methodological basis combines systematic literature review, static source-code dependency and change-impact analysis across five evolution scenarios, controlled load and resource benchmarking via Docker Engine and \texttt{k6}, and structured practitioner interviews with senior backend engineers.
 
-Afterwards, include a short note on the \textbf{methods applied}, without going into detail.  
-Example:  
-"The methodological basis of the study includes the analysis of scientific literature, statistical data, and other relevant sources. The applied methods are <LIST METHODS SUCH AS: comparative analysis, surveys, experiments, modelling>."  
+Empirically, the modular monolith consumes 25.5\% less idle memory (903.98 MiB vs.\ 1,213.60 MiB) and 14.7\% less memory under concurrent load (1,151.35 MiB vs.\ 1,350.20 MiB), while requiring fewer cross-boundary code changes for cross-cutting features. Conversely, microservices achieve 2.65$\times$ lower 95th-percentile tail latency (12.30 ms vs.\ 32.57 ms) and isolated service deployment, demonstrating that SMEs benefit most from starting with a modular monolith and decomposing selectively only when team or domain bottlenecks emerge.
 
-Then, summarize the \textbf{main results and conclusions} in 2–3 sentences. Focus only on the most important contribution of the paper.  
-
-Finally, indicate the \textbf{scope of the work}.  
 \thesisscopeEN
-
-\textbf{Keywords:} list 5–7 keywords that best describe the topic and focus of the paper.

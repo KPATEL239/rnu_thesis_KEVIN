@@ -1,21 +1,12 @@
 \frontmatterpage
 \unchapter{Anotācija}
 
-Anotācija ir īss darba kopsavilkums. Tās mērķis ir sniegt lasītājam pārskatu par izvēlēto tēmu, darba struktūru, izmantotajām metodēm un galvenajiem rezultātiem. Anotācijas apjoms nedrīkst pārsniegt 300 vārdus, un tā jāveido kā viens nepārtraukts teksts (bez aizzīmēm, tabulām, attēliem vai atsaucēm).  
+Piemērotas programmatūras arhitektūras izvēle ir stratēģiski nozīmīgs inženiertehnisks un finansiāls lēmums maziem un vidējiem e-komercijas uzņēmumiem (MVU), kuriem jāsabalansē ātra funkcionalitātes izstrāde ar ierobežotu infrastruktūras budžetu un nelielu izstrādes komandu. Šajā bakalaura darbā veikts empīrisks salīdzinošs pētījums starp modulāro monolīto arhitektūru un sadalīto mikroservisu arhitektūru, izmantojot divas atvērtā pirmkoda references sistēmas: Microsoft \texttt{eShopOnWeb} un \texttt{eShopOnContainers}.
 
-Parasti anotācija sākas ar \textbf{īsu tēmas ievadu}. 1–2 teikumos jānorāda, par ko ir darbs un kāpēc tēma ir aktuāla. Pilnais mērķis, uzdevumi vai hipotēze šeit nav jāatkārto – tie tiek detalizēti atspoguļoti Ievadā.  
+Darbs sastāv no piecām nodaļām. Pirmajā nodaļā aplūkoti programmatūras modularitātes, domēna vadītas projektēšanas un sadalīto sistēmu teorētiskie pamati. Otrajā nodaļā analizēti MVU e-komercijas platformu darbības ierobežojumi, noslodzes profili un evolūcijas prasības. Trešajā nodaļā aprakstīts konteinerizētais eksperimentālais stends, slodzes testēšanas metodoloģija un pieci standartizēti funkcionālo izmaiņu scenāriji. Ceturtajā nodaļā apkopoti veiktspējas mērījumi un koda izmaiņu izplatības rezultāti. Piektajā nodaļā empīriskie dati sintezēti praktiskā arhitektūras izvēles ietvarā un izvērtēti pētījuma validitātes ierobežojumi.
 
-Tālāk jāsniedz \textbf{darba struktūras pārskats pa nodaļām}.  
-Piemērs:  
-"Darbs sastāv no <NODAĻU SKAITS> nodaļām. 1. nodaļā aplūkoti <TEORĒTISKIE PAMATI>. 2. nodaļā sniegta <NOZARES/PROCESA/IZPĒTES OBJEKTA ANALĪZE>. 3. nodaļā veikts <EMPĪRISKAIS PĒTĪJUMS VAI PRAKTISKĀ IZPĒTE>. 4. nodaļā izstrādāti <UZLABOJUMI / MODEĻI / RISINĀJUMI>."  
+Pētījuma metodoloģiskais pamats ietver zinātniskās literatūras analīzi, statisko pirmkoda atkarību un izmaiņu ietekmes novērtējumu piecos evolūcijas scenārijos, kontrolētus slodzes un resursu mērījumus ar Docker un \texttt{k6} rīkiem, kā arī strukturētas intervijas ar pieredzējušiem programmatūras arhitektiem.
 
-Pēc tam jāiekļauj īss pārskats par \textbf{izmantotajām metodēm}, bet bez liekas detalizācijas.  
-Piemērs:  
-"Pētījuma metodoloģiskais pamats ietver zinātniskās literatūras analīzi, statistisko datu izvērtēšanu un citus attiecīgus avotus. Darbā izmantotas šādas metodes: <UZSKAITĪT METODES PIEMĒRAM: salīdzinošā analīze, aptauja, eksperiments, modelēšana>."  
+Empīriskie rezultāti parāda, ka modulārais monolīts patērē par 25,5\% mazāk operatīvās atmiņas miera stāvoklī (903,98 MiB pret 1\,213,60 MiB) un par 14,7\% mazāk atmiņas slodzes apstākļos (1\,151,35 MiB pret 1\,350,20 MiB), savukārt mikroservisu arhitektūra nodrošina 2,65 reizes zemāku 95.\ procentiles aizturi (12,30 ms pret 32,57 ms), pamatojot pakāpeniskas evolūcijas stratēģiju MVU uzņēmumiem.
 
-Tālāk 2–3 teikumos jāapraksta \textbf{galvenie rezultāti un secinājumi}, uzsverot tikai būtiskāko ieguldījumu.  
-
-Noslēgumā jānorāda \textbf{darba apjoms}.  
 \thesisscopeLV
-
-\textbf{Atslēgvārdi:} jānorāda 5–7 galvenie jēdzieni, kas raksturo darba tēmu un saturu (piemēram, <ATSLĒGVĀRDS1>, <ATSLĒGVĀRDS2>, <ATSLĒGVĀRDS3>).

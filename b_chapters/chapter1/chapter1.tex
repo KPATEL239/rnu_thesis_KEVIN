@@ -1,123 +1,77 @@
 \chapter{Literature Review and Theoretical Background}
 \label{chap:litreview}
 
-% --- Purpose (for students) ---
-% This chapter defines key concepts, surveys related work, and sets the theoretical lens.
-% It must end by motivating the research direction and articulating the concrete gap your thesis fills.
-
 \section{Core Concepts and Definitions}
 \label{sec:concepts}
-Introduce the foundational terms your thesis relies on using authoritative sources, e.g., \cite{porter2008,laudon2015}. Define each term exactly once and use it consistently throughout the thesis. Prefer primary definitions where possible; when multiple definitions exist, present the variants and justify your chosen convention.
 
-Inline emphasis: \emph{italics}, \textbf{bold}. Use \verb|\enquote{...}| (from \texttt{csquotes}) for quotations, e.g., \enquote{quoted text}. Use \verb|\url{...}| for clickable links such as \url{https://ctan.org}.
+Software architecture defines the fundamental structural organization of a system, comprising its computational components, their externally visible properties, and the relationships governing their interaction and evolution \cite{martin2017,ford2022}. Within modern web engineering, two structural styles dominate backend design: the \textit{modular monolith} and \textit{microservices}.
 
-\paragraph{Citation tip.}
-With \texttt{biblatex} (IEEE style in this project), numeric citations use \verb|\cite{...}|.\footnote{Place the citation after punctuation when it references a full sentence.} Group multiple sources as needed, e.g., \cite{friedman2006,schmidt2014}.
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Monolithic Architecture:} A software system packaged, deployed, and executed as a single unified process or tightly coupled deployment artifact \cite{richardson2018}. When structured using strict internal namespace boundaries, dependency inversion, and domain-aligned modules, it is termed a \textit{modular monolith}, achieving compile-time modularity without network serialization boundaries \cite{martin2017,newman2021}.
+  \item \textbf{Microservices Architecture:} An architectural style that structures an application as a suite of small, autonomous services modeled around business capabilities, each running in its own process, owning its private data store, and communicating via lightweight mechanisms such as HTTP/REST, gRPC, or asynchronous message brokers \cite{fowler2014,dragoni2017}.
+  \item \textbf{Bounded Context:} A central pattern in Domain-Driven Design (DDD) that demarcates an explicit linguistic and logical boundary within which a particular domain model is defined and applicable \cite{evans2003}. Both modular monoliths and microservices rely on bounded contexts to prevent domain model entanglement.
+  \item \textbf{Change Propagation (Ripple Effect):} The extent to which modifying a requirement in one module necessitates structural edits, recompilation, or redeployment across dependent modules or services \cite{parnas1972,ford2022}.
+\end{itemize}
 
 \section{Related Work: Themes, Methods, and Evidence}
 \label{sec:related}
-Organize prior work by coherent themes (theory, methods, application domains) or chronology. For each theme, summarize the central idea, typical assumptions, evaluation protocols, and reported limitations. Contrast strands rather than listing them.
 
-\begin{itemize}[leftmargin=1.2cm]
-  \item \textbf{Approach A (theory-driven).} Outline core mechanisms, typical datasets, and where this approach excels; note constraints or external validity issues \cite{friedman2006}.
-  \item \textbf{Approach B (data-driven/practice-oriented).} Contrast assumptions and deployment costs with Approach A; highlight reproducibility and measurement issues \cite{laudon2015}.
-  \item \textbf{Approach C (hybrid/emerging).} Summarize integration points and remaining open problems \cite{schmidt2014}.
+Empirical and secondary literature comparing monolithic and microservices architectures spans three primary research strands:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Systematic Mapping and Industry Migration Studies:} Pahl and Jamshidi \cite{pahl2016} and Soldani et al.\ \cite{soldani2018} synthesized industrial reports on microservices adoption, identifying independent deployability and fault isolation as primary gains, while documenting operational complexity, distributed testing difficulty, and infrastructure cost inflation as recurring pains. Similarly, Taibi et al.\ \cite{taibi2017} and Fritzsch et al.\ \cite{fritzsch2019} surveyed industry migrations, finding that teams frequently underestimate the DevOps maturity required to operate distributed service meshes and sagas.
+  \item \textbf{Quantitative Runtime Performance Benchmarks:} Villamizar et al.\ \cite{villamizar2015} evaluated cloud deployment costs for monolithic versus microservice web applications, demonstrating that microservices can reduce infrastructure cost at extreme scale via granular auto-scaling, but incur higher baseline overhead at low-to-moderate traffic. Al-Debagy and Martinek \cite{aldebis2020}, Tapia et al.\ \cite{tapia2020}, and Blinowski et al.\ \cite{blinov2021} conducted controlled HTTP load tests showing that inter-service serialization and API gateway routing introduce measurable overhead on simple transactions, whereas decomposed read paths can outperform monolithic thread pools under concurrent load.
+  \item \textbf{Socio-Technical and Evolutionary Architecture Theory:} Conway's Law \cite{conway1968} posits that system designs mirror the communication structures of the organizations that build them. Building on Parnas's information-hiding criteria \cite{parnas1972}, Fowler \cite{fowler2015monolith} and Newman \cite{newman2021} advocate a ``Monolith-First'' evolutionary strategy, warning that decomposing a system before domain boundaries stabilize results in a ``distributed monolith'' that combines network latency with tight coupling.
 \end{itemize}
 
-When referring to figures, tables, algorithms, or listings, always use labels + \verb|\cref| (e.g., \cref{fig:example-figure,tab:example-table,alg:example,lst:snippet}).
-
-% ---- Figure example (caption under figure; centered by class) ----
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.7\linewidth]{b_chapters/chapter1/assets/RNU_large_logo.png}
-  \figsource{Author-created illustration (replace with your own figure and source).}
-  \caption{Example figure: a conceptual taxonomy (replace with your content).}
-  \label{fig:example-figure}
-\end{figure}
-
-% ---- Table example (caption above; ragged-right by class) ----
-{\singlespacing
-\begin{table}[h]
-  \caption{Comparison matrix (replace with your synthesis)}
-  \label{tab:example-table}
-  \centering
-  \begin{tabular}{lrrr}
-    \toprule
-    Criterion            & Method A & Method B & Method C\\
-    \midrule
-    Accuracy (avg)       & 0.82     & 0.79     & 0.84\\
-    Cost (relative)      & High     & Medium   & Low\\
-    Data requirement     & Large    & Medium   & Small\\
-    \bottomrule
-  \end{tabular}
-
-  \vspace{2mm}
-  \emph{Note:} Replace placeholders with your evidence; include units and sources.
-\end{table}
-}
+Despite extensive literature on large-scale cloud migrations, existing empirical studies rarely isolate the intersection of \textit{resource-constrained SME hardware} and \textit{standardized functional change propagation} across production-equivalent codebases written in the same language ecosystem.
 
 \section{Theoretical Framework}
 \label{sec:theory}
-State the theoretical lens or formal model that grounds your work. Define variables and relationships precisely, and connect assumptions to the context of your thesis. Keep derivations concise; move long proofs to an appendix.
 
-\begin{align}
-  \label{eq:objective}
-  J(\theta) &= \mathbb{E}_{(x,y)\sim \mathcal{D}} \bigl[\, \ell(f_\theta(x),\, y)\, \bigr] \, ,
-\end{align}
+To evaluate both architectural styles rigorously, this study adopts a multi-dimensional quality model grounded in ISO/IEC~25010:2023 \cite{iso25010} and architectural trade-off analysis \cite{ford2022}. Specifically, architectural suitability $S(A)$ for an SME context is modeled across three orthogonal dimensions:
 
-where $\ell$ is the loss aligned to your evaluation criterion and $f_\theta$ the model or rule under study. Reference important equations with \verb|\cref|, e.g., \cref{eq:objective}.
+\begin{equation}
+\label{eq:tradeoff}
+U(A) = w_1 \cdot E_{\text{res}}(A) + w_2 \cdot P_{\text{lat}}(A) + w_3 \cdot M_{\text{evol}}(A), \quad \sum_{i=1}^{3} w_i = 1
+\end{equation}
 
-% ---- Algorithm (float + pseudocode) example ----
-\begin{algorithm}[h]
-\caption{Generic greedy selection (template — adapt to your context)}
-\begin{algorithmic}[1]
-  \State Initialize solution $S \gets \emptyset$
-  \While{a feasible choice exists}
-    \State choose the best feasible item $x$ according to criterion $C$
-    \State $S \gets S \cup \{x\}$
-  \EndWhile
-  \State \Return $S$
-\end{algorithmic}
-\label{alg:example}
-\end{algorithm}
+where $E_{\text{res}}(A)$ denotes runtime resource efficiency (inverse memory footprint and cold-start overhead), $P_{\text{lat}}(A)$ captures responsiveness under concurrent load (median $p_{50}$, tail $p_{95}$ latency, and error-free throughput), and $M_{\text{evol}}(A)$ represents evolutionary maintainability (localization of code edits and deployment scope during feature changes).
 
-\section{Illustrative Code Snippet (if applicable)}
-\label{sec:listings}
-Include small, focused excerpts that clarify core ideas or reproducibility steps. Keep captions short and descriptive.
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}[
+    node distance=1.2cm and 1.4cm,
+    box/.style={rectangle, draw=black!80, thick, rounded corners=3pt, minimum width=3.4cm, minimum height=0.95cm, align=center, font=\small},
+    hub/.style={rectangle, draw=black!90, very thick, fill=black!5, rounded corners=4pt, minimum width=3.8cm, minimum height=1.1cm, align=center, font=\small\bfseries}
+  ]
+    \node[hub] (iso) {ISO/IEC 25010:2023\\Architectural Quality};
+    \node[box, above left=of iso] (res) {\textbf{Resource Efficiency}\\Idle \& Peak RAM, Boot Time};
+    \node[box, above right=of iso] (perf) {\textbf{Performance Efficiency}\\$p_{50}$ / $p_{95}$ Latency, RPS};
+    \node[box, below left=of iso] (maint) {\textbf{Maintainability}\\Files Touched, Coupling};
+    \node[box, below right=of iso] (ops) {\textbf{Operability (SME)}\\Deploy Units, Infra Cost};
 
-\begin{lstlisting}[language=Python,caption={Example function signature for a data transform},label={lst:snippet},float=htbp]
-def transform(records: list[dict]) -> list[dict]:
-    """Validate and normalize input records (example)."""
-    out = []
-    for r in records:
-        if "id" not in r:
-            continue
-        r = {k.strip().lower(): v for k, v in r.items()}
-        out.append(r)
-    return out
-\end{lstlisting}
-
-Reference listings with \cref{lst:snippet}. If advanced highlighting is required, consider \texttt{minted} (not enabled in this template by default to avoid external dependencies).
+    \draw[->, thick] (res) -- (iso);
+    \draw[->, thick] (perf) -- (iso);
+    \draw[->, thick] (maint) -- (iso);
+    \draw[->, thick] (ops) -- (iso);
+  \end{tikzpicture}
+  \caption{Theoretical evaluation framework mapping ISO/IEC 25010:2023 quality attributes to empirical metrics.}
+  \label{fig:theory-framework}
+\end{figure}
 
 \section{Research Motivation and Direction}
 \label{sec:motivation}
-\textbf{Purpose.} This subsection translates the state of the art (\cref{sec:related}) and the theoretical lens (\cref{sec:theory}) into a concrete research direction that is both \emph{necessary} (gap) and \emph{actionable} (methods and data you will actually use).
 
-\paragraph{Problem significance.}
-Briefly argue why the problem matters (scientific or practical). Identify stakeholders and decision contexts affected by your results.
+\paragraph{Purpose and Problem Significance.}
+For SME engineering leads and founders, choosing microservices solely due to industry hype can exhaust limited server memory and slow down small developer teams, whereas choosing an unstructured monolith risks technical debt during rapid product iteration. Providing concrete, reproducible measurements on identical .NET reference implementations equips SME decision-makers with empirical evidence rather than anecdotal claims.
 
-\paragraph{Identified gap.}
-From the comparison in \cref{sec:related}, distill the unmet need (e.g., missing evaluation setting, scalability constraint, domain misfit, weak external validity). Define the gap in one or two sentences that are testable or measurable.
+\paragraph{Identified Gap and Research Direction.}
+Existing benchmarks seldom measure both runtime resource consumption and source-level change propagation on equivalent enterprise-grade .NET e-commerce platforms under constrained host resources. This thesis addresses that gap by pairing controlled Docker/\texttt{k6} runtime benchmarks with five standardized code-evolution scenarios across \texttt{eShopOnWeb} and \texttt{eShopOnContainers}, corroborated by practitioner interviews.
 
-\paragraph{Direction and scope.}
-State the research direction you will pursue to address the gap, together with scope boundaries (what is deliberately out of scope). Link this direction to the thesis \emph{Aim} and \emph{Tasks} defined in the Introduction and to the task→chapter mapping (see Table in the Introduction).
-
-\paragraph{Success criteria.}
-Name the primary evaluation criteria (metrics or qualitative outcomes) that will determine whether the approach succeeds in your empirical chapter.
+\paragraph{Success Criteria.}
+The research direction is validated if: (1) both reference architectures execute reproducibly under identical traffic profiles with $0.00\%$ HTTP error rates; (2) hypotheses H1--H3 are quantitatively confirmed or refuted with exact telemetry logs; and (3) the resulting decision matrix provides unambiguous threshold rules for SME teams.
 
 \section{Chapter Summary}
-\label{sec:summary}
-This chapter (i) fixed key concepts (\cref{sec:concepts}), (ii) compared approaches and exposed a concrete gap (\cref{sec:related}), and (iii) established the theoretical lens (\cref{sec:theory}). The \textbf{Research Motivation and Direction} (\cref{sec:motivation}) specifies how the thesis will address that gap, setting up the next chapter’s analysis of the case/system.
-
-\noindent\textbf{Conclusions (for Chapter~1).}
-We defined the conceptual vocabulary, contrasted major approaches with evidence, and selected a theory consistent with the problem setting. A concrete gap has been articulated together with success criteria and scope. These choices motivate the analysis in Chapter~\ref{chap:analysis} and the empirical design in Chapter~\ref{chap:empirical}.
+\label{sec:ch1-summary}
+This chapter established the formal definitions of modular monolithic and microservices architectures, synthesized empirical findings across performance and migration literature, formulated a three-dimensional evaluation lens grounded in ISO/IEC~25010:2023, and defined the empirical gap and success criteria guiding Chapters~2 through~5.
