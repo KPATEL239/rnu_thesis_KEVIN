@@ -19,18 +19,18 @@
 
 \RequirePackage{titlesec}
 % Heading 1: 16pt bold; Heading 2: 14pt bold, left-aligned
-\titleformat{\chapter}[hang]{\bfseries\fontsize{16pt}{16pt}\selectfont}{\thechapter.}{0.8em}{}
+\titleformat{\chapter}[hang]{\bfseries\raggedright\fontsize{16pt}{16pt}\selectfont}{\thechapter.}{0.8em}{}
 \titlespacing*{\chapter}{0pt}{*3}{*1.2}
 
-\titleformat{\section}[hang]{\bfseries\fontsize{14pt}{14pt}\selectfont}{\thesection.}{0.6em}{}
+\titleformat{\section}[hang]{\bfseries\raggedright\fontsize{14pt}{14pt}\selectfont}{\thesection.}{0.6em}{}
 \titlespacing*{\section}{0pt}{*2}{*0.8}
 
-\titleformat{\subsection}[hang]{\bfseries\normalsize}{\thesubsection.}{0.6em}{}
+\titleformat{\subsection}[hang]{\bfseries\raggedright\normalsize}{\thesubsection.}{0.6em}{}
 \titlespacing*{\subsection}{0pt}{*1.6}{*0.6}
 
 % Match starred chapter heads (LoF/LoT/LoA/LoL, Abstract, etc.)
 \titleformat{name=\chapter,numberless}[hang]
-  {\bfseries\fontsize{16pt}{16pt}\selectfont}{}{0pt}{}
+  {\bfseries\raggedright\fontsize{16pt}{16pt}\selectfont}{}{0pt}{}
 \titlespacing*{name=\chapter,numberless}{0pt}{*3}{*1.2}
 
 \RequirePackage{fancyhdr}
