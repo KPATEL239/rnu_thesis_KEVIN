@@ -3,7 +3,7 @@
 
 Listing~\ref{lst:docker-stats} provides the automated PowerShell telemetry harness used to record container memory footprints and endpoint readiness times across both testbeds.
 
-\begin{lstlisting}[language=bash,caption={Telemetry collection commands for Docker memory and readiness probes},label={lst:docker-stats}]
+\begin{lstlisting}[float=H,language=bash,caption={Telemetry collection commands for Docker memory and readiness probes},label={lst:docker-stats}]
 # Measure container resident memory footprint (MiB)
 docker stats --no-stream --format "table {{.Name}}\t{{.MemUsage}}\t{{.CPUPerc}}"
 
