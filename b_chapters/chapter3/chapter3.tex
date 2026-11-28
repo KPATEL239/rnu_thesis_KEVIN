@@ -97,22 +97,34 @@ To substantiate the change-effort metrics reported across Scenarios $S_1$ throug
 \centering
 \caption{Concrete C\# Source and Infrastructure Artifact Mapping Across Change Scenarios ($S_1$--$S_5$)}
 \label{tab:csharp_artifact_map}
-\small
-\begin{tabular}{p{1.2cm} p{5.4cm} p{5.8cm}}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{1.85cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X}
 \toprule
 \textbf{Scenario} & \textbf{Monolith (\texttt{eShopOnWeb})} & \textbf{Microservices (\texttt{eShopOnContainers})} \\
 \midrule
-$S_1$ Payment Gateway & \texttt{ApplicationCore/Interfaces/IPaymentService.cs}, \texttt{Infrastructure/Services/PaymentAdapter.cs}, \texttt{Web/Configuration/ConfigureCoreServices.cs}, \texttt{Web/Pages/Basket/Checkout.cshtml.cs} (4 files; full app rebuild) & \texttt{Services/Payment/Payment.API/Startup.cs}, \texttt{Payment.API/IntegrationEvents/EventHandling/OrderStatusChangedToStockConfirmedIntegrationEventHandler.cs} (2 files; single container rebuild) \\
+$S_1$ Payment Gateway &
+\texttt{ApplicationCore/\allowbreak Interfaces/\allowbreak IPaymentService.cs}, \texttt{Infrastructure/\allowbreak Services/\allowbreak PaymentAdapter.cs}, \texttt{Web/\allowbreak Configuration/\allowbreak ConfigureCoreServices.cs}, \texttt{Web/\allowbreak Pages/\allowbreak Basket/\allowbreak Checkout.cshtml.cs} (4 files; full app rebuild) &
+\texttt{Services/\allowbreak Payment/\allowbreak Payment.API/\allowbreak Startup.cs}, \texttt{Payment.API/\allowbreak IntegrationEvents/\allowbreak EventHandling/\allowbreak OrderStatusChangedToStockConfirmedIntegrationEventHandler.cs} (2 files; single container rebuild) \\
 \addlinespace
-$S_2$ Pricing / Discount Rule & \texttt{ApplicationCore/Services/OrderService.cs}, \texttt{ApplicationCore/Specifications/CatalogFilterSpecification.cs}, \texttt{Web/Services/BasketViewModelService.cs} (3 files; full app rebuild) & \texttt{Services/Basket/Basket.API/Model/BasketItem.cs}, \texttt{Basket.API/Controllers/BasketController.cs} (2 files; single container rebuild) \\
+$S_2$ Pricing / Discount Rule &
+\texttt{ApplicationCore/\allowbreak Services/\allowbreak OrderService.cs}, \texttt{ApplicationCore/\allowbreak Specifications/\allowbreak CatalogFilterSpecification.cs}, \texttt{Web/\allowbreak Services/\allowbreak BasketViewModelService.cs} (3 files; full app rebuild) &
+\texttt{Services/\allowbreak Basket/\allowbreak Basket.API/\allowbreak Model/\allowbreak BasketItem.cs}, \texttt{Basket.API/\allowbreak Controllers/\allowbreak BasketController.cs} (2 files; single container rebuild) \\
 \addlinespace
-$S_3$ Cross-Cutting Schema Update & \texttt{ApplicationCore/Entities/OrderAggregate/Order.cs}, \texttt{Infrastructure/Data/Config/OrderConfiguration.cs}, EF Core Migration, \texttt{Web/ViewModels/OrderDetailViewModel.cs} (4 files; 1 schema migration) & \texttt{Ordering.Domain/AggregatesModel/OrderAggregate/Order.cs}, \texttt{Ordering.Infrastructure/EntityConfigurations/OrderEntityTypeConfiguration.cs}, \texttt{Ordering.API/Application/IntegrationEvents/Events/}, \texttt{WebSPA/Client/modules/orders/} (6 files; 2 services + event contract) \\
+$S_3$ Cross-Cutting Schema Update &
+\texttt{ApplicationCore/\allowbreak Entities/\allowbreak OrderAggregate/\allowbreak Order.cs}, \texttt{Infrastructure/\allowbreak Data/\allowbreak Config/\allowbreak OrderConfiguration.cs}, EF Core Migration, \texttt{Web/\allowbreak ViewModels/\allowbreak OrderDetailViewModel.cs} (4 files; 1 schema migration) &
+\texttt{Ordering.Domain/\allowbreak AggregatesModel/\allowbreak OrderAggregate/\allowbreak Order.cs}, \texttt{Ordering.Infrastructure/\allowbreak EntityConfigurations/\allowbreak OrderEntityTypeConfiguration.cs}, \texttt{Ordering.API/\allowbreak Application/\allowbreak IntegrationEvents/\allowbreak Events/}, \texttt{WebSPA/\allowbreak Client/\allowbreak modules/\allowbreak orders/} (6 files; 2 services + event contract) \\
 \addlinespace
-$S_4$ Async Notification Hook & \texttt{ApplicationCore/Services/OrderService.cs}, \texttt{Infrastructure/Services/EmailSender.cs}, \texttt{Web/Program.cs} (3 files; coupled in-process execution) & \texttt{Services/Ordering/Ordering.SignalrHub/IntegrationEvents/EventHandling/OrderStatusChangedToPaidIntegrationEventHandler.cs} (1 file; decoupled RabbitMQ consumer) \\
+$S_4$ Async Notification Hook &
+\texttt{ApplicationCore/\allowbreak Services/\allowbreak OrderService.cs}, \texttt{Infrastructure/\allowbreak Services/\allowbreak EmailSender.cs}, \texttt{Web/\allowbreak Program.cs} (3 files; coupled in-process execution) &
+\texttt{Services/\allowbreak Ordering/\allowbreak Ordering.SignalrHub/\allowbreak IntegrationEvents/\allowbreak EventHandling/\allowbreak OrderStatusChangedToPaidIntegrationEventHandler.cs} (1 file; decoupled RabbitMQ consumer) \\
 \addlinespace
-$S_5$ Catalog Read Optimization & \texttt{Infrastructure/Data/CatalogContext.cs}, \texttt{Web/Services/CachedCatalogViewModelService.cs}, \texttt{Web/Program.cs} (3 files; shares web worker memory) & \texttt{Services/Catalog/Catalog.API/Controllers/CatalogController.cs}, \texttt{Catalog.API/Infrastructure/CatalogContext.cs}, \texttt{docker-compose.override.yml} (3 files; isolated Redis + Catalog container) \\
+$S_5$ Catalog Read Optimization &
+\texttt{Infrastructure/\allowbreak Data/\allowbreak CatalogContext.cs}, \texttt{Web/\allowbreak Services/\allowbreak CachedCatalogViewModelService.cs}, \texttt{Web/\allowbreak Program.cs} (3 files; shares web worker memory) &
+\texttt{Services/\allowbreak Catalog/\allowbreak Catalog.API/\allowbreak Controllers/\allowbreak CatalogController.cs}, \texttt{Catalog.API/\allowbreak Infrastructure/\allowbreak CatalogContext.cs}, \texttt{docker-compose.override.yml} (3 files; isolated Redis + Catalog container) \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 Furthermore, across $N = 5$ independent Grafana k6 execution batches ($50$ virtual users, $60\text{ s}$ sustained steady-state window per run after a $15\text{ s}$ JIT warm-up), the measured latency distributions remained highly reproducible. For the monolithic deployment, the inter-run standard deviation of $p_{95}$ latency was $\sigma = 1.42\text{ ms}$ around the $32.57\text{ ms}$ mean (coefficient of variation $\text{CV} = 4.36\%$), whereas the decomposed Catalog endpoint exhibited $\sigma = 0.68\text{ ms}$ around the $12.30\text{ ms}$ mean ($\text{CV} = 5.53\%$), confirming that the $2.65\times$ tail-latency advantage under read-heavy concurrency is statistically stable rather than an artifact of transient host jitter.
