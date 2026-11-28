@@ -166,7 +166,8 @@ Table~\ref{tab:change-impact} and Figure~\ref{fig:change-chart} summarize the so
 
 Listing~\ref{lst:k6-script} shows the deterministic \texttt{k6} load-testing harness executed against both stacks.
 
-\begin{lstlisting}[float=H,language=Java,caption={Excerpt of the k6 HTTP load testing script executed against both architectures},label={lst:k6-script}]
+\noindent\begin{minipage}{\linewidth}
+\begin{lstlisting}[language=Java,caption={Excerpt of the k6 HTTP load testing script executed against both architectures},label={lst:k6-script}]
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
@@ -182,6 +183,7 @@ export default function () {
   sleep(1);
 }
 \end{lstlisting}
+\end{minipage}
 
 \section{Chapter Summary}
 \label{sec:ch4-summary}
